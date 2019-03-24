@@ -31,8 +31,8 @@ public class Customer {
     @Column(name = "gender")
     private Gender gender;
 
-    @Column(name = "phone")
-    private String phone;
+    @Column(name = "phone_number")
+    private String phoneNumber;
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -83,12 +83,12 @@ public class Customer {
         this.gender = gender;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getEmail() {

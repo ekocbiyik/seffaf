@@ -31,8 +31,8 @@ public class Address {
     @Column(name = "surname", nullable = false)
     private String surname;
 
-    @Column(name = "phone", nullable = false)
-    private String phone;
+    @Column(name = "phone_number", nullable = false)
+    private String phoneNumber;
 
     @Column(name = "address_title")
     private String addressTitle;
@@ -89,12 +89,12 @@ public class Address {
         this.surname = surname;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 
     public String getAddressTitle() {

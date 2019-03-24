@@ -59,6 +59,20 @@
             <version>5.4.0.Final</version>
         </dependency>
 
+        <!-- Google phonenumber verification -->
+        <dependency>
+            <groupId>com.googlecode.libphonenumber</groupId>
+            <artifactId>libphonenumber</artifactId>
+            <version>8.10.8</version>
+        </dependency>
+
+        <!-- commons-validator -->
+        <dependency>
+            <groupId>commons-validator</groupId>
+            <artifactId>commons-validator</artifactId>
+            <version>1.6</version>
+        </dependency>
+
 
     </dependencies>
 
