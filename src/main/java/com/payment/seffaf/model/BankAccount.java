@@ -21,8 +21,8 @@ public class BankAccount {
     @Column(name = "account_id")
     private UUID accountId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
     @Column(name = "card_number", nullable = false)

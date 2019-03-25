@@ -21,7 +21,7 @@ public class Address {
     @Column(name = "address_id")
     private UUID addressId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
