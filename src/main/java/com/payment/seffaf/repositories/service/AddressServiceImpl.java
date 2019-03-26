@@ -42,4 +42,10 @@ public class AddressServiceImpl implements IAddressService {
     public List<Address> getAllByCustomer(Customer customer) {
         return addressDao.findAllByCustomer(customer);
     }
+
+    @Transactional
+    @Override
+    public List<Address> getAllAddresses() {
+        return (List<Address>) addressDao.findAll();
+    }
 }

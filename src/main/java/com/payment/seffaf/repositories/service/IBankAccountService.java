@@ -19,4 +19,6 @@ public interface IBankAccountService {
 
     List<BankAccount> getAllByCustomer(Customer customer);
 
+    List<BankAccount> getAllBankAccounts();
+
 }

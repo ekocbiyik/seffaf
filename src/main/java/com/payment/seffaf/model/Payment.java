@@ -1,12 +1,14 @@
 package com.payment.seffaf.model;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * enbiya on 24.03.2019
@@ -16,17 +18,26 @@ import java.util.Date;
 public class Payment {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
     @Column(name = "payment_id")
-    private Integer paymentId;
+    private UUID paymentId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_number", nullable = true)
+    private Order order;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private BankAccount bankAccount;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "orderNumber", nullable = false)
-    private Order order;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Customer sellerCustomer;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "delivered_id", nullable = false)
+    private Customer deliveredCustomer;
 
     @Column(name = "currency", nullable = false)
     private Currency currency;
@@ -54,12 +65,20 @@ public class Payment {
     @Column(name = "updated_date")
     private Date updatedDate;
 
-    public Integer getPaymentId() {
+    public UUID getPaymentId() {
         return paymentId;
     }
 
-    public void setPaymentId(Integer paymentId) {
+    public void setPaymentId(UUID paymentId) {
         this.paymentId = paymentId;
+    }
+
+    public Order getOrder() {
+        return order;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
     }
 
     public BankAccount getBankAccount() {
@@ -70,12 +89,20 @@ public class Payment {
         this.bankAccount = bankAccount;
     }
 
-    public Order getOrder() {
-        return order;
+    public Customer getSellerCustomer() {
+        return sellerCustomer;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setSellerCustomer(Customer sellerCustomer) {
+        this.sellerCustomer = sellerCustomer;
+    }
+
+    public Customer getDeliveredCustomer() {
+        return deliveredCustomer;
+    }
+
+    public void setDeliveredCustomer(Customer deliveredCustomer) {
+        this.deliveredCustomer = deliveredCustomer;
     }
 
     public Currency getCurrency() {
@@ -141,5 +168,4 @@ public class Payment {
     public void setUpdatedDate(Date updatedDate) {
         this.updatedDate = updatedDate;
     }
-
 }

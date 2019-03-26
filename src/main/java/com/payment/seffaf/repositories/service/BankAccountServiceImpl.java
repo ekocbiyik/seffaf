@@ -42,4 +42,10 @@ public class BankAccountServiceImpl implements IBankAccountService {
     public List<BankAccount> getAllByCustomer(Customer customer) {
         return accountDao.findAllByCustomer(customer);
     }
+
+    @Transactional
+    @Override
+    public List<BankAccount> getAllBankAccounts() {
+        return (List<BankAccount>) accountDao.findAll();
+    }
 }

@@ -19,4 +19,6 @@ public interface IAddressService {
 
     List<Address> getAllByCustomer(Customer customer);
 
+    List<Address> getAllAddresses();
+
 }
