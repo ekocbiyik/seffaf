@@ -18,7 +18,5 @@ public interface IPaymentService {
 
     List<Payment> findAllByDeliveredCustomerId(UUID customerId);
 
-    List<Payment> findAllBySellerCustomerId(UUID customerId);
-
     List<Payment> getAllPayments();
 }

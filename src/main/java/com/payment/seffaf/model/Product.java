@@ -1,6 +1,5 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;

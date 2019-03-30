@@ -19,6 +19,4 @@ public interface IPaymentDao extends CrudRepository<Payment, UUID> {
 
     List<Payment> findAllByDeliveredCustomerId(UUID customerId);
 
-    List<Payment> findAllBySellerCustomerId(UUID customerId);
-
 }

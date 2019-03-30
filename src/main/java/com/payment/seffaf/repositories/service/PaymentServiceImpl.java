@@ -44,12 +44,6 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Transactional
     @Override
-    public List<Payment> findAllBySellerCustomerId(UUID customerId) {
-        return paymentDao.findAllBySellerCustomerId(customerId);
-    }
-
-    @Transactional
-    @Override
     public List<Payment> getAllPayments() {
         return (List<Payment>) paymentDao.findAll();
     }
