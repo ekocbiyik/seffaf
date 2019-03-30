@@ -1,11 +1,8 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -13,7 +10,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_address")
-public class Address {
+public class Address extends Auditable {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -21,9 +18,8 @@ public class Address {
     @Column(name = "address_id")
     private UUID addressId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -49,14 +45,6 @@ public class Address {
     @Column(name = "detail")
     private String detail;
 
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
     public UUID getAddressId() {
         return addressId;
     }
@@ -65,12 +53,12 @@ public class Address {
         this.addressId = addressId;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
     }
 
     public String getName() {
@@ -137,19 +125,4 @@ public class Address {
         this.detail = detail;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
 }

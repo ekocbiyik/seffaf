@@ -1,11 +1,8 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -13,7 +10,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_bank_account")
-public class BankAccount {
+public class BankAccount extends Auditable {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -21,9 +18,8 @@ public class BankAccount {
     @Column(name = "account_id")
     private UUID accountId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
 
     @Column(name = "card_number", nullable = false)
     private String cardNumber;
@@ -34,14 +30,6 @@ public class BankAccount {
     @Column(name = "iban_number", nullable = false)
     private String ibanNumber;
 
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
     public UUID getAccountId() {
         return accountId;
     }
@@ -50,12 +38,12 @@ public class BankAccount {
         this.accountId = accountId;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
     }
 
     public String getCardNumber() {
@@ -82,19 +70,4 @@ public class BankAccount {
         this.ibanNumber = ibanNumber;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
 }

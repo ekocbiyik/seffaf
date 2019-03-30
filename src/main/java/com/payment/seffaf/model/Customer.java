@@ -1,11 +1,8 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -13,7 +10,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_customer")
-public class Customer {
+public class Customer extends Auditable {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -42,14 +39,6 @@ public class Customer {
 
     @Column(name = "is_active")
     private boolean isActive;
-
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
 
     public UUID getCustomerId() {
         return customerId;
@@ -115,19 +104,4 @@ public class Customer {
         isActive = active;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
 }

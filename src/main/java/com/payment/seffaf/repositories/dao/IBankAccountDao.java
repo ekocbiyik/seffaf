@@ -1,7 +1,6 @@
 package com.payment.seffaf.repositories.dao;
 
 import com.payment.seffaf.model.BankAccount;
-import com.payment.seffaf.model.Customer;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +15,6 @@ public interface IBankAccountDao extends CrudRepository<BankAccount, UUID> {
 
     BankAccount findBankAccountByAccountId(UUID id);
 
-    List<BankAccount> findAllByCustomer(Customer customer);
+    List<BankAccount> findAllByCustomerId(UUID customerId);
 
 }

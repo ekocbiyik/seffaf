@@ -1,13 +1,11 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -15,17 +13,16 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_product")
-public class Product {
+public class Product extends Auditable {
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
-    @Column(name = "product_number", nullable = false)
-    private UUID productNumber;
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "customer_id", nullable = false)
-    private Customer customer;
+    @Column(name = "customer_id", nullable = false)
+    private UUID customerId;
 
     @Column(name = "image_url")
     private String imageUrl;
@@ -54,28 +51,20 @@ public class Product {
     @Column(name = "estimate_date")
     private int estimateDay;
 
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
-    public UUID getProductNumber() {
-        return productNumber;
+    public UUID getProductId() {
+        return productId;
     }
 
-    public void setProductNumber(UUID productNumber) {
-        this.productNumber = productNumber;
+    public void setProductId(UUID productId) {
+        this.productId = productId;
     }
 
-    public Customer getCustomer() {
-        return customer;
+    public UUID getCustomerId() {
+        return customerId;
     }
 
-    public void setCustomer(Customer customer) {
-        this.customer = customer;
+    public void setCustomerId(UUID customerId) {
+        this.customerId = customerId;
     }
 
     public String getImageUrl() {
@@ -150,19 +139,4 @@ public class Product {
         this.estimateDay = estimateDay;
     }
 
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
-    }
 }

@@ -1,7 +1,6 @@
 package com.payment.seffaf.repositories.dao;
 
 import com.payment.seffaf.model.Address;
-import com.payment.seffaf.model.Customer;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +15,6 @@ public interface IAddressDao extends CrudRepository<Address, UUID> {
 
     Address findAddressByAddressId(UUID id);
 
-    List<Address> findAllByCustomer(Customer customer);
+    List<Address> findAllByCustomerId(UUID customerId);
 
 }

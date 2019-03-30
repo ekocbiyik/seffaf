@@ -1,7 +1,5 @@
 package com.payment.seffaf.repositories.service;
 
-import com.payment.seffaf.model.Customer;
-import com.payment.seffaf.model.Order;
 import com.payment.seffaf.model.Payment;
 import com.payment.seffaf.repositories.dao.IPaymentDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,20 +32,20 @@ public class PaymentServiceImpl implements IPaymentService {
 
     @Transactional
     @Override
-    public Payment findPaymentByOrder(Order order) {
-        return paymentDao.findPaymentByOrder(order);
+    public Payment findPaymentByOrderId(UUID orderId) {
+        return paymentDao.findPaymentByOrderId(orderId);
     }
 
     @Transactional
     @Override
-    public List<Payment> findAllByDeliveredCustomer(Customer customer) {
-        return paymentDao.findAllByDeliveredCustomer(customer);
+    public List<Payment> findAllByDeliveredCustomerId(UUID customerId) {
+        return paymentDao.findAllByDeliveredCustomerId(customerId);
     }
 
     @Transactional
     @Override
-    public List<Payment> findAllBySellerCustomer(Customer customer) {
-        return paymentDao.findAllBySellerCustomer(customer);
+    public List<Payment> findAllBySellerCustomerId(UUID customerId) {
+        return paymentDao.findAllBySellerCustomerId(customerId);
     }
 
     @Transactional

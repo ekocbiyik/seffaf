@@ -1,7 +1,6 @@
 package com.payment.seffaf.repositories.service;
 
 import com.payment.seffaf.model.BankAccount;
-import com.payment.seffaf.model.Customer;
 
 import java.util.List;
 import java.util.UUID;
@@ -17,7 +16,7 @@ public interface IBankAccountService {
 
     BankAccount getBankAccountById(UUID id);
 
-    List<BankAccount> getAllByCustomer(Customer customer);
+    List<BankAccount> getAllByCustomerId(UUID customerId);
 
     List<BankAccount> getAllBankAccounts();
 

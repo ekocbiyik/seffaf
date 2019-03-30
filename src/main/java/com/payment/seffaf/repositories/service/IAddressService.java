@@ -17,7 +17,7 @@ public interface IAddressService {
 
     Address getAddressById(UUID id);
 
-    List<Address> getAllByCustomer(Customer customer);
+    List<Address> getAllByCustomerId(UUID customerId);
 
     List<Address> getAllAddresses();
 

@@ -1,7 +1,5 @@
 package com.payment.seffaf.repositories.service;
 
-import com.payment.seffaf.model.Customer;
-import com.payment.seffaf.model.Order;
 import com.payment.seffaf.model.Payment;
 
 import java.util.List;
@@ -16,11 +14,11 @@ public interface IPaymentService {
 
     Payment findPaymentByPaymentId(UUID id);
 
-    Payment findPaymentByOrder(Order order);
+    Payment findPaymentByOrderId(UUID orderId);
 
-    List<Payment> findAllByDeliveredCustomer(Customer customer);
+    List<Payment> findAllByDeliveredCustomerId(UUID customerId);
 
-    List<Payment> findAllBySellerCustomer(Customer customer);
+    List<Payment> findAllBySellerCustomerId(UUID customerId);
 
     List<Payment> getAllPayments();
 }

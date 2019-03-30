@@ -1,7 +1,6 @@
 package com.payment.seffaf.repositories.service;
 
 import com.payment.seffaf.model.Address;
-import com.payment.seffaf.model.Customer;
 import com.payment.seffaf.repositories.dao.IAddressDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,8 +38,8 @@ public class AddressServiceImpl implements IAddressService {
 
     @Transactional
     @Override
-    public List<Address> getAllByCustomer(Customer customer) {
-        return addressDao.findAllByCustomer(customer);
+    public List<Address> getAllByCustomerId(UUID customerId) {
+        return addressDao.findAllByCustomerId(customerId);
     }
 
     @Transactional
@@ -48,4 +47,5 @@ public class AddressServiceImpl implements IAddressService {
     public List<Address> getAllAddresses() {
         return (List<Address>) addressDao.findAll();
     }
+
 }

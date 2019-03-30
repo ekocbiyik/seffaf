@@ -1,30 +1,27 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.Date;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * enbiya on 24.03.2019
  */
 @Entity
 @Table(name = "t_order")
-public class Order {
+public class Order extends Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "order_number", nullable = false)
-    private Integer orderNumber;
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @Column(name = "order_id", nullable = false, unique = true)
+    private UUID orderId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivered_customer", nullable = false)
-    private Customer deliveredCustomer;
+    @Column(name = "delivered_customer_id", nullable = false)
+    private UUID deliveredCustomerId;
 
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
@@ -32,31 +29,20 @@ public class Order {
     @Column(name = "currency", nullable = false)
     private Currency currency;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "orderNumber")
-    private List<OrderDetail> orderDetails;
-
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
-    public Integer getOrderNumber() {
-        return orderNumber;
+    public UUID getOrderId() {
+        return orderId;
     }
 
-    public void setOrderNumber(Integer orderNumber) {
-        this.orderNumber = orderNumber;
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
     }
 
-    public Customer getDeliveredCustomer() {
-        return deliveredCustomer;
+    public UUID getDeliveredCustomerId() {
+        return deliveredCustomerId;
     }
 
-    public void setDeliveredCustomer(Customer deliveredCustomer) {
-        this.deliveredCustomer = deliveredCustomer;
+    public void setDeliveredCustomerId(UUID deliveredCustomerId) {
+        this.deliveredCustomerId = deliveredCustomerId;
     }
 
     public BigDecimal getTotalAmount() {
@@ -73,29 +59,5 @@ public class Order {
 
     public void setCurrency(Currency currency) {
         this.currency = currency;
-    }
-
-    public List<OrderDetail> getOrderDetails() {
-        return orderDetails;
-    }
-
-    public void setOrderDetails(List<OrderDetail> orderDetails) {
-        this.orderDetails = orderDetails;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
     }
 }

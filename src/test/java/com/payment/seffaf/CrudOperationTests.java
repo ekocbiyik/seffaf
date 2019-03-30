@@ -4,10 +4,7 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.Phonenumber;
 import com.payment.seffaf.model.*;
-import com.payment.seffaf.repositories.service.IAddressService;
-import com.payment.seffaf.repositories.service.IBankAccountService;
-import com.payment.seffaf.repositories.service.ICustomerService;
-import com.payment.seffaf.repositories.service.IPaymentService;
+import com.payment.seffaf.repositories.service.*;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +14,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.Currency;
+import java.util.Locale;
 
 /**
  * enbiya on 24.03.2019
@@ -37,73 +35,85 @@ public class CrudOperationTests {
     private IBankAccountService accountService;
 
     @Autowired
+    private IProductService productService;
+
+    @Autowired
+    private IOrderService orderService;
+
+    @Autowired
+    private IOrderDetailService orderDetailService;
+
+    @Autowired
     private IPaymentService paymentService;
 
 
     @Test
-    public void genericTest() {
+    public void genericTest() throws NumberParseException {
+
+        /**
+         * linke tıklandı, ürün ekranı açıldı
+         * adres bilgileri girildi, buton tıklandı
+         * ürüne ait fiyat ekranı geldi
+         * ödeme yap butonu tıklandı,
+         *      customer oluşturuldu
+         *      address oluşturuldu
+         *      order oluşturuldu
+         *      orderDetail oluşturuldu (IN_PAYMENT)
+         * insert başarılıysa ödeme ekranına yönlendirildi
+         * ödeme yapıldı
+         *      payment oluşturuldu
+         *      status IN_QUEUE çekildi
+         * */
+
+
+        // ornek bir senaryo
         customerTest();
         addressTest();
         bankAccountTest();
+        productTest();
+        orderTest();
         paymentTest();
     }
 
     @Test
-    public void customerTest() {
-
-        List<Customer> customerList = new ArrayList<>();
-        Customer c = null;
-        for (int i = 0; i < 5; i++) {
-            c = new Customer();
-            c.setName("enbiya" + i);
-            c.setSurname("kocbiyik");
-            c.setGender(Gender.MALE);
-            c.setPhoneNumber("0554111111" + i);
-            c.setEmail("enbiya" + i + "@mail.com");
-            c.setPassword("deneme_password");
-            c.setActive(true);
-            customerList.add(c);
-        }
+    public void customerTest() throws NumberParseException {
 
 
-        try {
-            PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-            Phonenumber.PhoneNumber swissNumberProto = phoneUtil.parse(c.getPhoneNumber(), "TR");
-            System.out.println("phoneNumber isValid : " + phoneUtil.isValidNumber(swissNumberProto));
-            System.out.println("e-mail isValid      : " + EmailValidator.getInstance().isValid(c.getEmail()));
-        } catch (NumberParseException e) {
-            System.err.println("NumberParseException was thrown: " + e.toString());
-        }
+        Customer customer = new Customer();
+        customer.setName("Enbiya");
+        customer.setSurname("KOCBIYIK");
+        customer.setGender(Gender.MALE);
+        customer.setPhoneNumber("0554111111");
+        customer.setEmail("enbiya@mail.com");
+        customer.setPassword(null);
+        customer.setActive(true);
 
-        customerList.forEach(cc -> customerService.save(cc));
+        customerService.save(customer);
+        customerService.getAllCustomer().forEach(c -> System.out.println(c.getEmail()));
 
-        customerService.getAllCustomer().forEach(cc -> System.out.println(cc.getCustomerId() + ": " + cc.getName()));
-//        customerService.getAllCustomer().forEach(cc -> {
-//            customerService.delete(cc);
-//            System.out.println(c.getCustomerId() + " deleted..");
-//        });
+        PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+        Phonenumber.PhoneNumber swissNumberProto = phoneUtil.parse(customer.getPhoneNumber(), "TR");
+        System.out.println("phoneNumber isValid : " + phoneUtil.isValidNumber(swissNumberProto));
+        System.out.println("e-mail isValid      : " + EmailValidator.getInstance().isValid(customer.getEmail()));
     }
 
     @Test
     public void addressTest() {
 
-        List<Customer> allCustomer = customerService.getAllCustomer();
-        if (allCustomer.size() < 0) return;
+        Customer customer = customerService.getAllCustomer().get(0);
 
-        allCustomer.forEach(c -> {
-            Address a = new Address();
-            a.setCustomer(c);
-            a.setName(c.getName());
-            a.setSurname(c.getSurname());
-            a.setPhoneNumber(c.getPhoneNumber());
-            a.setAddressTitle(c.getName() + "- Ev Adresim");
-            a.setCountry(new Locale("", "TR").getDisplayName());
-            a.setCity("Trabzon");
-            a.setDistrict("OF");
-            a.setDetail(c.getEmail() + " - yola çıkmadan arayınız.");
+        Address address = new Address();
+        address.setCustomerId(customer.getCustomerId());
+        address.setName(customer.getName());
+        address.setSurname(customer.getSurname());
+        address.setPhoneNumber(customer.getPhoneNumber());
+        address.setAddressTitle("Iş Adresim");
+        address.setCountry(new Locale("", "TR").getDisplayName());
+        address.setCity("Istanbul");
+        address.setDistrict("Umraniye");
+        address.setDetail("Sekretere teslim ediniz.");
 
-            addressService.save(a);
-        });
+        addressService.save(address);
 
         addressService.getAllAddresses().forEach(aa -> System.out.println(aa.getAddressId() + " " + aa.getAddressTitle()));
     }
@@ -111,51 +121,98 @@ public class CrudOperationTests {
     @Test
     public void bankAccountTest() {
 
-        List<Customer> allCustomer = customerService.getAllCustomer();
-        if (allCustomer.size() < 0) return;
+        Customer customer = customerService.getAllCustomer().get(0);
 
-        allCustomer.forEach(c -> {
+        BankAccount b = new BankAccount();
+        b.setCustomerId(customer.getCustomerId());
+        b.setCardNumber("4322123412341234");
+        b.setCardHolderName("Enbiya KOçbıyık".toUpperCase());
+        b.setIbanNumber("TR000000000000000001"); // kaçbasamklı kontrol edilmeli..
 
-            String d1 = String.format("%04d", new Random().nextInt(10000));
-            String d2 = String.format("%04d", new Random().nextInt(10000));
-            String d3 = String.format("%04d", new Random().nextInt(10000));
-            String d4 = String.format("%04d", new Random().nextInt(10000));
-
-            BankAccount account = new BankAccount();
-            account.setCardHolderName(c.getName().toUpperCase() + " " + c.getSurname().toUpperCase());
-            account.setCardNumber(d1 + "-" + d2 + "-" + d3 + "-" + d4);
-            account.setIbanNumber("TR610000000000000000" + d1);
-            account.setCustomer(c);
-            accountService.save(account);
-        });
+        accountService.save(b);
 
         accountService.getAllBankAccounts().forEach(a -> System.out.println(a.getCardNumber()));
+    }
+
+    @Test
+    public void productTest() {
+
+        Customer customer = customerService.getAllCustomer().get(0);
+
+        Product p = new Product();
+        p.setCustomerId(customer.getCustomerId());
+        p.setImageUrl("ekocbiyik.com/image");
+        p.setProductAmount(new BigDecimal("61.50"));
+        p.setTransportAmount(BigDecimal.ZERO);
+        p.setCurrency(Currency.getInstance("TRY"));
+        p.setStockCount(1);
+        p.setCompanyName("Seffaf A.S");
+        p.setTitle("Kupa Bardak");
+        p.setDescription("ismi özel bardak..");
+        p.setEstimateDay(2);
+
+        productService.save(p);
+
+        productService.getAllProducts().forEach(pp -> System.out.println(p.getTitle()));
+    }
+
+    @Test
+    public void orderTest() {
+
+        Customer customer = customerService.getAllCustomer().get(0);
+        Product product = productService.getAllProducts().get(0);
+        Address address = addressService.getAllByCustomerId(customer.getCustomerId()).get(0);
+
+        Order order = new Order();
+        order.setDeliveredCustomerId(customer.getCustomerId());
+        order.setTotalAmount(product.getProductAmount().add(product.getTransportAmount()));
+        order.setCurrency(product.getCurrency());
+        orderService.save(order);
+
+
+        OrderDetail d = new OrderDetail();
+        d.setOrderId(order.getOrderId());
+        d.setProductId(product.getProductId());
+        d.setCount(1);
+        d.setDescription("ajdgfadsf");
+        d.setProductAmount(product.getProductAmount());
+        d.setTransportAmount(BigDecimal.ZERO);
+        d.setCurrency(product.getCurrency());
+        d.setTrackingNumber(null);
+        d.setSellerCustomerId(customer.getCustomerId());
+        d.setDeliveredCustomerId(customer.getCustomerId());
+        d.setSellerAddressId(address.getAddressId());
+        d.setDeliveryAddressId(address.getAddressId());
+        d.setOrderStatus(OrderStatus.IN_PAYMENT);
+        orderDetailService.save(d);
+
+        orderDetailService.getAllOrderDetails().forEach(oDetail -> System.out.println(oDetail.getOrderDetailId()));
     }
 
     @Test
     public void paymentTest() {
 
         BigDecimal payment = new BigDecimal("1115.37");
-        NumberFormat n = NumberFormat.getCurrencyInstance(Locale.US);
+        NumberFormat n = NumberFormat.getCurrencyInstance(new Locale("TR"));
         double doublePayment = payment.doubleValue();
         String s = n.format(doublePayment);
         System.out.println(s);
 
-        List<Customer> allCustomer = customerService.getAllCustomer();
-        if (allCustomer.size() < 2) return;
 
-        List<BankAccount> allBankAccounts = accountService.getAllBankAccounts();
+        Customer customer = customerService.getAllCustomer().get(0);
+        BankAccount account = accountService.getAllBankAccounts().get(0);
+        Order order = orderService.getAllOrders().get(0);
+
 
         Payment p = new Payment();
-//        p.setOrder(new Order());
-        p.setBankAccount(allBankAccounts.get(0));
-        p.setSellerCustomer(allCustomer.get(0));
-        p.setDeliveredCustomer(allCustomer.get(1));
-        p.setCurrency(Currency.getInstance("TRY"));
-        p.setPaymentAmount(new BigDecimal("61.50"));
+        p.setOrderId(order.getOrderId());
+        p.setAccountId(account.getAccountId());
+        p.setDeliveredCustomerId(customer.getCustomerId());
+        p.setCurrency(order.getCurrency());
+        p.setPaymentAmount(order.getTotalAmount());
         p.setVposCode("12");
         p.setVposRefCode("32323");
-        p.setBankCode("453452");
+        p.setBankCode("453452"); // ödemeyi alan banka kodu
 
         paymentService.save(p);
 

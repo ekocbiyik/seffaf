@@ -1,13 +1,10 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Currency;
-import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -15,7 +12,7 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_payment")
-public class Payment {
+public class Payment extends Auditable {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -23,21 +20,14 @@ public class Payment {
     @Column(name = "payment_id")
     private UUID paymentId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_number", nullable = true)
-    private Order order;
+    @Column(name = "order_id", nullable = false)
+    private UUID orderId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private BankAccount bankAccount;
+    @Column(name = "account_id", nullable = false)
+    private UUID accountId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_id", nullable = false)
-    private Customer sellerCustomer;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "delivered_id", nullable = false)
-    private Customer deliveredCustomer;
+    @Column(name = "delivered_customer_id", nullable = false)
+    private UUID deliveredCustomerId;
 
     @Column(name = "currency", nullable = false)
     private Currency currency;
@@ -57,14 +47,6 @@ public class Payment {
     @Column(name = "bank_code")
     private String bankCode;
 
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
     public UUID getPaymentId() {
         return paymentId;
     }
@@ -73,36 +55,28 @@ public class Payment {
         this.paymentId = paymentId;
     }
 
-    public Order getOrder() {
-        return order;
+    public UUID getOrderId() {
+        return orderId;
     }
 
-    public void setOrder(Order order) {
-        this.order = order;
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
     }
 
-    public BankAccount getBankAccount() {
-        return bankAccount;
+    public UUID getAccountId() {
+        return accountId;
     }
 
-    public void setBankAccount(BankAccount bankAccount) {
-        this.bankAccount = bankAccount;
+    public void setAccountId(UUID accountId) {
+        this.accountId = accountId;
     }
 
-    public Customer getSellerCustomer() {
-        return sellerCustomer;
+    public UUID getDeliveredCustomerId() {
+        return deliveredCustomerId;
     }
 
-    public void setSellerCustomer(Customer sellerCustomer) {
-        this.sellerCustomer = sellerCustomer;
-    }
-
-    public Customer getDeliveredCustomer() {
-        return deliveredCustomer;
-    }
-
-    public void setDeliveredCustomer(Customer deliveredCustomer) {
-        this.deliveredCustomer = deliveredCustomer;
+    public void setDeliveredCustomerId(UUID deliveredCustomerId) {
+        this.deliveredCustomerId = deliveredCustomerId;
     }
 
     public Currency getCurrency() {
@@ -151,21 +125,5 @@ public class Payment {
 
     public void setBankCode(String bankCode) {
         this.bankCode = bankCode;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
     }
 }

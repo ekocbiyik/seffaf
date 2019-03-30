@@ -1,7 +1,7 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -14,21 +14,22 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_order_detail")
-public class OrderDetail {
+public class OrderDetail extends Auditable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "order_detail_id", nullable = false)
-    private Integer orderDetailId;
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @Column(name = "order_detail_id", nullable = false, unique = true)
+    private UUID orderDetailId;
 
-    @Column(name = "order_number", nullable = false)
-    private Integer orderNumber;
+    @Column(name = "order_id", nullable = false, unique = true)
+    private UUID orderId;
+
+    @Column(name = "product_id", nullable = false)
+    private UUID productId;
 
     @Column(name = "refunded_number")
     private Integer refundedNumber;
-
-    @Column(name = "product_number", nullable = false)
-    private UUID productNumber;
 
     @Column(name = "count", nullable = false)
     private int count;
@@ -48,21 +49,17 @@ public class OrderDetail {
     @Column(name = "tracking_number")
     private String trackingNumber;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "seller_customer", nullable = false)
-    private Customer sellerCustomer;
+    @Column(name = "seller_customer_id", nullable = false)
+    private UUID sellerCustomerId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivered_customer", nullable = false)
-    private Customer deliveredCustomer;
+    @Column(name = "delivered_customer_id", nullable = false)
+    private UUID deliveredCustomerId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "seller_address", nullable = false)
-    private Address sellerAddress;
+    @Column(name = "seller_address_id", nullable = false)
+    private UUID sellerAddressId;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "delivery_address", nullable = false)
-    private Address deliveryAddress;
+    @Column(name = "delivery_address_id", nullable = false)
+    private UUID deliveryAddressId;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "order_status", nullable = false)
@@ -76,28 +73,28 @@ public class OrderDetail {
     @Column(name = "received_date")
     private Date receivedDate;
 
-    @CreationTimestamp
-    @Column(name = "created_date")
-    private Date createdDate;
-
-    @UpdateTimestamp
-    @Column(name = "updated_date")
-    private Date updatedDate;
-
-    public Integer getOrderDetailId() {
+    public UUID getOrderDetailId() {
         return orderDetailId;
     }
 
-    public void setOrderDetailId(Integer orderDetailId) {
+    public void setOrderDetailId(UUID orderDetailId) {
         this.orderDetailId = orderDetailId;
     }
 
-    public Integer getOrderNumber() {
-        return orderNumber;
+    public UUID getOrderId() {
+        return orderId;
     }
 
-    public void setOrderNumber(Integer orderNumber) {
-        this.orderNumber = orderNumber;
+    public void setOrderId(UUID orderId) {
+        this.orderId = orderId;
+    }
+
+    public UUID getProductId() {
+        return productId;
+    }
+
+    public void setProductId(UUID productId) {
+        this.productId = productId;
     }
 
     public Integer getRefundedNumber() {
@@ -106,14 +103,6 @@ public class OrderDetail {
 
     public void setRefundedNumber(Integer refundedNumber) {
         this.refundedNumber = refundedNumber;
-    }
-
-    public UUID getProductNumber() {
-        return productNumber;
-    }
-
-    public void setProductNumber(UUID productNumber) {
-        this.productNumber = productNumber;
     }
 
     public int getCount() {
@@ -164,36 +153,36 @@ public class OrderDetail {
         this.trackingNumber = trackingNumber;
     }
 
-    public Customer getSellerCustomer() {
-        return sellerCustomer;
+    public UUID getSellerCustomerId() {
+        return sellerCustomerId;
     }
 
-    public void setSellerCustomer(Customer sellerCustomer) {
-        this.sellerCustomer = sellerCustomer;
+    public void setSellerCustomerId(UUID sellerCustomerId) {
+        this.sellerCustomerId = sellerCustomerId;
     }
 
-    public Customer getDeliveredCustomer() {
-        return deliveredCustomer;
+    public UUID getDeliveredCustomerId() {
+        return deliveredCustomerId;
     }
 
-    public void setDeliveredCustomer(Customer deliveredCustomer) {
-        this.deliveredCustomer = deliveredCustomer;
+    public void setDeliveredCustomerId(UUID deliveredCustomerId) {
+        this.deliveredCustomerId = deliveredCustomerId;
     }
 
-    public Address getSellerAddress() {
-        return sellerAddress;
+    public UUID getSellerAddressId() {
+        return sellerAddressId;
     }
 
-    public void setSellerAddress(Address sellerAddress) {
-        this.sellerAddress = sellerAddress;
+    public void setSellerAddressId(UUID sellerAddressId) {
+        this.sellerAddressId = sellerAddressId;
     }
 
-    public Address getDeliveryAddress() {
-        return deliveryAddress;
+    public UUID getDeliveryAddressId() {
+        return deliveryAddressId;
     }
 
-    public void setDeliveryAddress(Address deliveryAddress) {
-        this.deliveryAddress = deliveryAddress;
+    public void setDeliveryAddressId(UUID deliveryAddressId) {
+        this.deliveryAddressId = deliveryAddressId;
     }
 
     public OrderStatus getOrderStatus() {
@@ -218,21 +207,5 @@ public class OrderDetail {
 
     public void setReceivedDate(Date receivedDate) {
         this.receivedDate = receivedDate;
-    }
-
-    public Date getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public Date getUpdatedDate() {
-        return updatedDate;
-    }
-
-    public void setUpdatedDate(Date updatedDate) {
-        this.updatedDate = updatedDate;
     }
 }

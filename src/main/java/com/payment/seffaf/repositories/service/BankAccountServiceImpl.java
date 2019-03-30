@@ -1,7 +1,6 @@
 package com.payment.seffaf.repositories.service;
 
 import com.payment.seffaf.model.BankAccount;
-import com.payment.seffaf.model.Customer;
 import com.payment.seffaf.repositories.dao.IBankAccountDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -39,8 +38,8 @@ public class BankAccountServiceImpl implements IBankAccountService {
 
     @Transactional
     @Override
-    public List<BankAccount> getAllByCustomer(Customer customer) {
-        return accountDao.findAllByCustomer(customer);
+    public List<BankAccount> getAllByCustomerId(UUID customerId) {
+        return accountDao.findAllByCustomerId(customerId);
     }
 
     @Transactional

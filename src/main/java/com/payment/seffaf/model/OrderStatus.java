@@ -5,6 +5,7 @@ package com.payment.seffaf.model;
  */
 public enum OrderStatus {
 
+    IN_PAYMENT,
     IN_QUEUE,
     IN_PREPARE,
     IN_TRANSPORT,
