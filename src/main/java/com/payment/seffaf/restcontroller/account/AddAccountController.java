@@ -1,4 +1,4 @@
-package com.payment.seffaf.controller.account;
+package com.payment.seffaf.restcontroller.account;
 
 /**
  * enbiya on 30.03.2019

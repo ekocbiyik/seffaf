@@ -1,9 +1,12 @@
 package com.payment.seffaf.operation;
 
+import com.payment.seffaf.model.ApilogBuilder;
+import com.payment.seffaf.repositories.service.IApiLogService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Date;
 
 /**
  * enbiya on 30.03.2019
@@ -11,24 +14,39 @@ import java.util.concurrent.atomic.AtomicLong;
 @Controller
 public class DefaultOperationExecutionStrategy {
 
-    final AtomicLong atomicLong = new AtomicLong();
+    @Autowired
+    private IApiLogService apiLogService;
 
     public synchronized Object execute(ISeffafOperation seffafOperation, HttpServletRequest httpRequest, String source, String operation, Object[] params) {
-        final Long internalTrackingId = atomicLong.incrementAndGet();
-        seffafOperation.init(params);
-        return executeOperation(seffafOperation, internalTrackingId, source, operation, httpRequest);
+        return executeOperation(seffafOperation, source, operation, httpRequest, params);
     }
 
+    private Object executeOperation(ISeffafOperation seffafOperation, String source, String operation, HttpServletRequest httpRequest, Object[] params) {
 
-    protected Object executeOperation(ISeffafOperation seffafOperation, Long internalTrackingId, String source, String operation, HttpServletRequest httpRequest) {
+        Object result = null;
+        ApilogBuilder builder = new ApilogBuilder();
+        builder
+                .setStartDate(new Date())
+                .setRestService(source)
+                .setHttpRequest(httpRequest)
+                .setRestMethod(operation);
+        try {
+            Object requestBody = seffafOperation.init(params);
+            builder.setRequestBody(requestBody.toString());
 
-        seffafOperation.validate();
-        seffafOperation.operate();
-//        seffafOperation.handleException(new Exception());
-
-        // TODO: 30.03.2019 buradan devam et
-        return seffafOperation.operate();
+            seffafOperation.validate();
+            result = seffafOperation.operate();
+        } catch (Exception e) {
+            e.printStackTrace();
+            builder.setException(e);
+            result = seffafOperation.handleException(e);
+        } finally {
+            builder
+                    .setHttpResponse(result.toString())
+                    .setFinishDate(new Date());
+            apiLogService.save(builder.build());
+            return result;
+        }
     }
-
 
 }

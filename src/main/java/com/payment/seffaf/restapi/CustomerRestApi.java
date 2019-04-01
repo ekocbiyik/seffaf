@@ -1,6 +1,6 @@
 package com.payment.seffaf.restapi;
 
-import com.payment.seffaf.controller.customer.AddCustomerController;
+import com.payment.seffaf.restcontroller.customer.AddCustomerController;
 import com.payment.seffaf.operation.ISeffafOperationExecutor;
 import com.payment.seffaf.operation.SeffafOperationRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +15,9 @@ import java.util.Map;
 /**
  * enbiya on 30.03.2019
  */
+@RequestMapping(value = "/api")
 @RestController
-public class CustomerRestController {
+public class CustomerRestApi {
 
     static String SERVICE = "CUSTOMER";
     static String addCustomer = "addCustomer";

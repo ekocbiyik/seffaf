@@ -5,7 +5,7 @@ package com.payment.seffaf.operation;
  */
 public interface ISeffafOperation<T> {
 
-    void init(Object... params);
+    T init(Object... params);
 
     void validate();
 
