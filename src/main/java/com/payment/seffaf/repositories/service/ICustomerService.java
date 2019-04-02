@@ -18,4 +18,6 @@ public interface ICustomerService {
 
     List<Customer> getAllCustomer();
 
+    List<Customer> findAllByEmailOrPhoneNumber(String email, String phoneNumber);
+
 }

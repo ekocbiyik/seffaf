@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * enbiya on 30.03.2019
@@ -43,6 +44,7 @@ public class DefaultOperationExecutionStrategy {
         } finally {
             builder
                     .setHttpResponse(result.toString())
+                    .setResultMap((Map) result)
                     .setFinishDate(new Date());
             apiLogService.save(builder.build());
             return result;

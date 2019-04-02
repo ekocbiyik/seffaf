@@ -24,7 +24,7 @@ public class Customer extends Auditable {
     @Column(name = "surname")
     private String surname;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
     private Gender gender;
 

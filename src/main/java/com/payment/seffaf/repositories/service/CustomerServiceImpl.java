@@ -41,4 +41,10 @@ public class CustomerServiceImpl implements ICustomerService {
     public List<Customer> getAllCustomer() {
         return (List<Customer>) customerDao.findAll();
     }
+
+    @Transactional
+    @Override
+    public List<Customer> findAllByEmailOrPhoneNumber(String email, String phoneNumber) {
+        return customerDao.findAllByEmailOrPhoneNumber(email, phoneNumber);
+    }
 }

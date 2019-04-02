@@ -34,16 +34,16 @@ public class ApiLog {
     @Column(name = "source_ip")
     private String sourceIp;
 
-    @Column(name = "request")
+    @Column(name = "request", length = 999)
     private String request;
 
-    @Column(name = "response")
+    @Column(name = "response", length = 999)
     private String response;
 
     @Column(name = "response_code")
     private String responseCode;
 
-    @Column(name = "exception")
+    @Column(name = "exception", length = 999)
     private String exception;
 
     @Temporal(TemporalType.TIMESTAMP)

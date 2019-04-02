@@ -1,12 +1,17 @@
 package com.payment.seffaf.restcontroller.customer;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payment.seffaf.exceptions.SeffafExceptionCode;
+import com.payment.seffaf.exceptions.SeffafExceptionOutput;
+import com.payment.seffaf.exceptions.ValidationException;
 import com.payment.seffaf.middleware.facade.ICustomerFacade;
 import com.payment.seffaf.model.Customer;
+import com.payment.seffaf.model.Gender;
 import com.payment.seffaf.operation.SeffafOperationImpl;
+import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -18,38 +23,55 @@ public class AddCustomerController extends SeffafOperationImpl {
     @Autowired
     private ICustomerFacade customerFacade;
 
-    private String request;
-    private Map<String, String> parameters;
+    private Map request;
+    private Customer customer;
 
     @Override
     public Object init(Object... params) {
         logger.info("params: {}", params);
-        this.request = params[0].toString();
-        return request;
+        this.request = (Map) params[0];
+        return request.toString();
     }
 
     @Override
-    public void validate() {
-        logger.info("request: {}", request);
-        parameters = new HashMap<>();
-        parameters.put("name", "enbiya");
+    public void validate() throws ValidationException {
+        ValidationUtils.textValidation(request.get("name").toString());
+        ValidationUtils.textValidation(request.get("surname").toString());
+        ValidationUtils.phoneNumberValidation(request.get("phoneNumber").toString());
+        ValidationUtils.emailValidation(request.get("email").toString());
+
+        try {
+            Gender.valueOf(request.get("gender").toString().toUpperCase());
+        } catch (Exception e) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER,
+                    String.format("invalid parameter: gender(%s)", request.get("gender").toString()));
+        }
+
+        customer = new Customer();
+        customer.setName(request.get("name").toString());
+        customer.setSurname(request.get("surname").toString());
+        customer.setGender(Gender.valueOf(request.get("gender").toString().toUpperCase()));
+        customer.setPhoneNumber(request.get("phoneNumber").toString());
+        customer.setEmail(request.get("email").toString());
     }
 
     @Override
     public Object operate() {
         logger.info("AddCustomerController operate executed!");
-        Customer customer = customerFacade.createCustomer(parameters);
-        Map<String, Object> resutlMap = new HashMap();
-        resutlMap.put("customer", customer);
-        return resutlMap;
+        customerFacade.createCustomer(customer);
+
+        ObjectMapper oMapper = new ObjectMapper();
+        AddCustomerOutput output = new AddCustomerOutput(100, customer);
+        Map<String, Object> map = oMapper.convertValue(output, Map.class);
+        return map;
     }
 
     @Override
     public Object handleException(Exception e) {
         logger.info("AddCustomerController handleException executed!");
-        Map<String, String> responseMap = new HashMap<>();
-        responseMap.put("responseCode", "100");
-        responseMap.put("message", e.getMessage());
-        return responseMap;
+        return new ObjectMapper()
+                .convertValue(
+                        new SeffafExceptionOutput(99, e.getMessage()),
+                        Map.class);
     }
 }

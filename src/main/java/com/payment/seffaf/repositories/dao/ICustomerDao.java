@@ -4,6 +4,7 @@ import com.payment.seffaf.model.Customer;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -13,5 +14,7 @@ import java.util.UUID;
 public interface ICustomerDao extends CrudRepository<Customer, UUID> {
 
     Customer findByCustomerId(UUID id);
+
+    List<Customer> findAllByEmailOrPhoneNumber(String email, String phoneNumber);
 
 }

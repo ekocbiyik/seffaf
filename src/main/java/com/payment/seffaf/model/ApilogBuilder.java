@@ -1,7 +1,10 @@
 package com.payment.seffaf.model;
 
+import com.payment.seffaf.exceptions.SeffafException;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * enbiya on 01.04.2019
@@ -14,6 +17,7 @@ public class ApilogBuilder {
     private HttpServletRequest httpRequest;
     private String requestBody;
     private String httpResponse;
+    private Map resultMap;
     private Date startDate;
     private Date finishDate;
 
@@ -57,6 +61,11 @@ public class ApilogBuilder {
         return this;
     }
 
+    public ApilogBuilder setResultMap(Map resultMap) {
+        this.resultMap = resultMap;
+        return this;
+    }
+
     public ApiLog build() {
         ApiLog apiLog = new ApiLog();
         apiLog.setRestService(restService);
@@ -72,11 +81,13 @@ public class ApilogBuilder {
             apiLog.setRequest(requestBody);
         }
 
+        if (resultMap != null && resultMap.containsKey("responseCode")) {
+            apiLog.setResponseCode(resultMap.get("responseCode").toString());
+        }
+
         if (exception == null) {
         } else {
-            apiLog.setException(exception.getMessage());
-            // TODO: 01.04.2019
-//            apiLog.setResponseCode(String.valueOf(exception.getCode()));
+            apiLog.setException(SeffafException.parseExceptionMessage(exception, 999));
         }
         return apiLog;
     }

@@ -9,6 +9,6 @@ import java.util.Map;
  */
 public interface ICustomerFacade {
 
-    Customer createCustomer(Map<String, String> parameters);
+    Customer createCustomer(Customer customer);
 
 }
