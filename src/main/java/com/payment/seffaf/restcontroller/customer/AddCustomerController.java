@@ -26,7 +26,6 @@ public class AddCustomerController extends SeffafOperationImpl {
 
     @Override
     public Object init(Object... params) {
-        logger.info("params: {}", params);
         this.request = (Map) params[0];
         return request.toString();
     }

@@ -7,7 +7,6 @@ import com.payment.seffaf.middleware.facade.IBankAccountFacade;
 import com.payment.seffaf.model.BankAccount;
 import com.payment.seffaf.operation.SeffafOperationImpl;
 import com.payment.seffaf.utils.ValidationUtils;
-import org.apache.commons.validator.routines.CreditCardValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -28,7 +27,6 @@ public class AddBankAccountController extends SeffafOperationImpl {
 
     @Override
     public Object init(Object... params) {
-        logger.info("params: {}", params);
         this.request = (Map) params[0];
         return request.toString();
     }
