@@ -1,12 +1,10 @@
 package com.payment.seffaf.restcontroller.customer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.payment.seffaf.exceptions.SeffafExceptionCode;
 import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.exceptions.ValidationException;
 import com.payment.seffaf.middleware.facade.ICustomerFacade;
 import com.payment.seffaf.model.Customer;
-import com.payment.seffaf.model.Gender;
 import com.payment.seffaf.operation.SeffafOperationImpl;
 import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,17 +38,9 @@ public class AddCustomerController extends SeffafOperationImpl {
         ValidationUtils.phoneNumberValidation(request.get("phoneNumber").toString());
         ValidationUtils.emailValidation(request.get("email").toString());
 
-        try {
-            Gender.valueOf(request.get("gender").toString().toUpperCase());
-        } catch (Exception e) {
-            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER,
-                    String.format("invalid parameter: gender(%s)", request.get("gender").toString()));
-        }
-
         customer = new Customer();
         customer.setName(request.get("name").toString());
         customer.setSurname(request.get("surname").toString());
-        customer.setGender(Gender.valueOf(request.get("gender").toString().toUpperCase()));
         customer.setPhoneNumber(request.get("phoneNumber").toString());
         customer.setEmail(request.get("email").toString());
     }

@@ -21,7 +21,7 @@ public class BankAccount extends Auditable {
     @Column(name = "customer_id", nullable = false)
     private UUID customerId;
 
-    @Column(name = "card_number", nullable = false)
+    @Column(name = "card_number")
     private String cardNumber;
 
     @Column(name = "card_holdername", nullable = false)

@@ -1,6 +1,5 @@
 package com.payment.seffaf.middleware.facadeimpl;
 
-import com.payment.seffaf.exceptions.ValidationException;
 import com.payment.seffaf.middleware.facade.ICustomerFacade;
 import com.payment.seffaf.model.Customer;
 import com.payment.seffaf.repositories.service.ICustomerService;
@@ -24,12 +23,6 @@ public class CustomerFacadeImpl implements ICustomerFacade {
 
     @Override
     public Customer createCustomer(Customer customer) {
-
-        Customer cc = null;
-
-        if (true) {
-            cc.getCustomerId();
-        }
 
         List<Customer> customerList = customerService.findAllByEmailOrPhoneNumber(customer.getEmail(), customer.getPhoneNumber());
 
