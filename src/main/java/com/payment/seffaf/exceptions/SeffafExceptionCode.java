@@ -7,6 +7,7 @@ public class SeffafExceptionCode {
 
     public static final int INVALID_PARAMETER = 300;
     public static final int REQUIRED_PARAMETER = 301;
+    public static final int UNIMPLEMENTED_METHOD = 302;
 
     //customer
     public static final int CUSTOMER_NOT_FOUND = 400;
@@ -25,6 +26,6 @@ public class SeffafExceptionCode {
 
     //order
     public static final int ORDER_NOT_FOUND = 800;
-
+    public static final int ORDER_DETAILS_NOT_FOUND = 801;
 
 }

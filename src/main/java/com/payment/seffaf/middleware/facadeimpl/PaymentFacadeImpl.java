@@ -3,10 +3,12 @@ package com.payment.seffaf.middleware.facadeimpl;
 import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.exceptions.SeffafExceptionCode;
 import com.payment.seffaf.middleware.facade.IPaymentFacade;
+import com.payment.seffaf.model.Order;
 import com.payment.seffaf.model.OrderDetail;
 import com.payment.seffaf.model.OrderStatus;
 import com.payment.seffaf.model.Payment;
 import com.payment.seffaf.repositories.service.IOrderDetailService;
+import com.payment.seffaf.repositories.service.IOrderService;
 import com.payment.seffaf.repositories.service.IPaymentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +29,9 @@ public class PaymentFacadeImpl implements IPaymentFacade {
     private IPaymentService paymentService;
 
     @Autowired
+    private IOrderService orderService;
+
+    @Autowired
     private IOrderDetailService orderDetailService;
 
     @Override
@@ -35,10 +40,17 @@ public class PaymentFacadeImpl implements IPaymentFacade {
         paymentService.save(payment);
         logger.info("payment created: {}", payment.getPaymentId());
 
+        Order order = orderService.getOrderByOrderId(payment.getOrderId());
+        if (order == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", payment.getOrderId()));
+        }
+        logger.info("order found: {}", order.getOrderId());
+
         List<OrderDetail> orderDetails = orderDetailService.getOrderDetailsByOrderId(payment.getOrderId());
         if (orderDetails.isEmpty()) {
-            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", payment.getOrderId().toString()));
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", payment.getOrderId().toString()));
         }
+        logger.info("order details found {}", orderDetails.size());
 
         for (OrderDetail detail : orderDetails) {
             detail.setOrderStatus(OrderStatus.IN_QUEUE);

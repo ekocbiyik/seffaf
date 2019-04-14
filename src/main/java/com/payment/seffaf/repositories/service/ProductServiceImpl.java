@@ -65,8 +65,17 @@ public class ProductServiceImpl implements IProductService {
 
     @Transactional
     @Override
-    public synchronized boolean increaseStockCountByProduct(Product product, int stockCount) {
-        return false;
+    public synchronized boolean increaseStockCountByProduct(Product product, int stockCount) throws SeffafException {
+        Product p = productDao.findByProductId(product.getProductId());
+        if (p == null) {
+            throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND: %s", product.getProductId()));
+        }
+        logger.info("product found with {} stock size!", p.getStockCount());
+
+        p.setStockCount(p.getStockCount() + stockCount);
+        save(p);
+        logger.info("product stocksize updated: {}!", p.getStockCount());
+        return true;
     }
 
 

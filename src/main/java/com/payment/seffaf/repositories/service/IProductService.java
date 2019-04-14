@@ -21,6 +21,6 @@ public interface IProductService {
 
     boolean decreaseStockCountByProduct(Product product, int stockCount) throws SeffafException;
 
-    boolean increaseStockCountByProduct(Product product, int stockCount);
+    boolean increaseStockCountByProduct(Product product, int stockCount) throws SeffafException;
 
 }

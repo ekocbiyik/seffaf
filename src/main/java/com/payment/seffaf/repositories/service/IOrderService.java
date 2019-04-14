@@ -12,7 +12,7 @@ public interface IOrderService {
 
     void save(Order order);
 
-    Order findOrderByOrderId(UUID orderId);
+    Order getOrderByOrderId(UUID orderId);
 
     List<Order> findAllByDeliveredCustomerId(UUID customerId);
 

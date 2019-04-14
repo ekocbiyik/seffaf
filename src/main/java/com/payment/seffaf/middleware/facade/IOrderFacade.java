@@ -14,4 +14,6 @@ public interface IOrderFacade {
 
     Order createOrder(UUID customerId, UUID addressId, String description, Map<UUID, Integer> productIdList) throws SeffafException;
 
+    Order cancelOrder(UUID orderId) throws SeffafException;
+
 }

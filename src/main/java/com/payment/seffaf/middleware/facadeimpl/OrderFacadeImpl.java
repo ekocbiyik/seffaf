@@ -122,4 +122,47 @@ public class OrderFacadeImpl implements IOrderFacade {
         }
         return order;
     }
+
+    @Transactional(rollbackFor = SeffafException.class)
+    @Override
+    public Order cancelOrder(UUID orderId) throws SeffafException {
+
+        Order order = orderService.getOrderByOrderId(orderId);
+        if (order == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", orderId));
+        }
+        logger.info("order found: {}", order.getOrderId());
+
+        List<OrderDetail> orderDetails = orderDetailService.getOrderDetailsByOrderId(orderId);
+        if (orderDetails.isEmpty()) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderId));
+        }
+        logger.info("order details found {}", orderDetails.size());
+
+        /** eğer status IN_PAYMENT ise, hemen iptal edilebilir
+         *  değilse ödeme iadesi olacağı için düşünülmesi gereken bir durum
+         */
+        for (OrderDetail detail : orderDetails) {
+            if (detail.getOrderStatus() != OrderStatus.IN_PAYMENT) {
+                throw new SeffafException(SeffafExceptionCode.UNIMPLEMENTED_METHOD, String.format("UNIMPLEMENTED_METHOD: cancelOrder for %s", detail.getOrderStatus()));
+            }
+            logger.info("stock count will be increase for detailId: {}", detail.getOrderDetailId());
+
+            Product product = productService.getByProductId(detail.getProductId());
+            if (product == null) {
+                throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND : %s", detail.getProductId()));
+            }
+            logger.info("product found: {}", product.getProductId());
+
+
+            productService.increaseStockCountByProduct(product, detail.getCount());
+            logger.info("product stock increased to {}", product.getStockCount());
+
+            detail.setOrderStatus(OrderStatus.CANCELLED);
+            orderDetailService.save(detail);
+            logger.info("orderDetail: {} has been cancelled", detail.getOrderDetailId());
+        }
+        return order;
+    }
+
 }

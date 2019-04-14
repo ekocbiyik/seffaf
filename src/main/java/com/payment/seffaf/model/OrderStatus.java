@@ -5,12 +5,13 @@ package com.payment.seffaf.model;
  */
 public enum OrderStatus {
 
-    IN_PAYMENT,
-    IN_QUEUE,
-    IN_PREPARE,
-    IN_TRANSPORT,
-    DELIVERED,
-    CANCELLED,
-    REFUSED
+    IN_PAYMENT,             // siparişi oluşturdu, henüz ödeme yapmadı
+    CANCELLED_IN_PAYMENT,   // ödeme yapılmadan iptal edildi
+    IN_QUEUE,               // ödeme yaptı, satıcı onayı bekliyor
+    IN_PREPARE,             // satıcı onayladı, hazırlanıyor
+    IN_TRANSPORT,           // kargoda
+    DELIVERED,              // teslim edildi
+    CANCELLED,              // ödeme yapıldıktan sonra iptal edildi
+    REFUSED                 // geri iade talebi
 
 }

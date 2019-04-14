@@ -6,7 +6,6 @@ import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.middleware.facade.IPaymentFacade;
 import com.payment.seffaf.model.Payment;
 import com.payment.seffaf.operation.SeffafOperationImpl;
-import com.payment.seffaf.restcontroller.product.AddProductOutput;
 import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,7 +23,6 @@ public class AddPaymentController extends SeffafOperationImpl {
 
     private Map request;
     private Payment payment;
-
 
     @Autowired
     private IPaymentFacade paymentFacade;
