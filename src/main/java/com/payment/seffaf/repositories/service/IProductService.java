@@ -1,5 +1,6 @@
 package com.payment.seffaf.repositories.service;
 
+import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.model.Product;
 
 import java.util.List;
@@ -12,10 +13,14 @@ public interface IProductService {
 
     void save(Product product);
 
-    Product findByProductId(UUID uuid);
+    Product getByProductId(UUID uuid);
 
     List<Product> findAllByCustomerId(UUID customerId);
 
     List<Product> getAllProducts();
+
+    boolean decreaseStockCountByProduct(Product product, int stockCount) throws SeffafException;
+
+    boolean increaseStockCountByProduct(Product product, int stockCount);
 
 }

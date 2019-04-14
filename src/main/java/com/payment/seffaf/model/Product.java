@@ -20,6 +20,9 @@ public class Product extends Auditable {
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
+    @Version
+    private Long version;
+
     @Column(name = "customer_id", nullable = false)
     private UUID customerId;
 
@@ -65,6 +68,14 @@ public class Product extends Auditable {
 
     public void setProductId(UUID productId) {
         this.productId = productId;
+    }
+
+    public Long getVersion() {
+        return version;
+    }
+
+    public void setVersion(Long version) {
+        this.version = version;
     }
 
     public UUID getCustomerId() {

@@ -12,7 +12,9 @@ public interface IOrderDetailService {
 
     void save(OrderDetail orderDetail);
 
-    OrderDetail findOrderDetailByOrderDetailId(UUID id);
+    OrderDetail getOrderDetailById(UUID id);
+
+    List<OrderDetail> getOrderDetailsByOrderId(UUID orderID);
 
     List<OrderDetail> findAllByDeliveredCustomerId(UUID customerId);
 

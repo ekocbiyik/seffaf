@@ -17,4 +17,6 @@ public interface IOrderDetailDao extends CrudRepository<OrderDetail, UUID> {
 
     List<OrderDetail> findAllByDeliveredCustomerId(UUID customerId);
 
+    List<OrderDetail> findAllByOrderId(UUID orderId);
+
 }

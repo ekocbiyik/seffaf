@@ -1,6 +1,5 @@
 package com.payment.seffaf.model;
 
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
@@ -27,6 +26,9 @@ public class OrderDetail extends Auditable {
 
     @Column(name = "product_id", nullable = false)
     private UUID productId;
+
+    @Column(name = "is_refunded", nullable = false) // iade edilebilir mi?
+    private boolean isRefunded;
 
     @Column(name = "refunded_number")
     private Integer refundedNumber;
@@ -95,6 +97,14 @@ public class OrderDetail extends Auditable {
 
     public void setProductId(UUID productId) {
         this.productId = productId;
+    }
+
+    public boolean isRefunded() {
+        return isRefunded;
+    }
+
+    public void setRefunded(boolean refunded) {
+        isRefunded = refunded;
     }
 
     public Integer getRefundedNumber() {

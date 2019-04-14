@@ -6,9 +6,9 @@ import com.google.i18n.phonenumbers.Phonenumber;
 import com.payment.seffaf.exceptions.SeffafExceptionCode;
 import com.payment.seffaf.exceptions.ValidationException;
 import com.payment.seffaf.model.Gender;
-import org.apache.commons.validator.routines.CreditCardValidator;
-import org.apache.commons.validator.routines.EmailValidator;
-import org.apache.commons.validator.routines.IBANValidator;
+import org.apache.commons.validator.routines.*;
+
+import java.util.Currency;
 
 /**
  * enbiya on 02.04.2019
@@ -57,9 +57,35 @@ public class ValidationUtils {
         }
     }
 
+    public static void numberValidation(String value) throws ValidationException {
+        if (!new IntegerValidator().isValid(value)) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", value));
+        }
+    }
+
     public static void emailValidation(String email) throws ValidationException {
         if (!EmailValidator.getInstance().isValid(email)) {
             throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", email));
+        }
+    }
+
+    public static void amountValidation(String amount) throws ValidationException {
+        if (!new BigDecimalValidator().isValid(amount)) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", amount));
+        }
+    }
+
+    public static void booleanValidation(String value) throws ValidationException {
+        if (!"true".equals(value) && !"false".equals(value)) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", value));
+        }
+    }
+
+    public static void currencyValidation(String value) throws ValidationException {
+        try {
+            Currency.getInstance(value);
+        } catch (Exception e) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", value));
         }
     }
 

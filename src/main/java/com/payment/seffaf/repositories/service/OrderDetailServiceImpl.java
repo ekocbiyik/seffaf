@@ -26,8 +26,14 @@ public class OrderDetailServiceImpl implements IOrderDetailService {
 
     @Transactional
     @Override
-    public OrderDetail findOrderDetailByOrderDetailId(UUID id) {
+    public OrderDetail getOrderDetailById(UUID id) {
         return orderDetailDao.findOrderDetailByOrderDetailId(id);
+    }
+
+    @Transactional
+    @Override
+    public List<OrderDetail> getOrderDetailsByOrderId(UUID orderID) {
+        return orderDetailDao.findAllByOrderId(orderID);
     }
 
     @Transactional

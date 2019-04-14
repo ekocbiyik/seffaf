@@ -1,5 +1,6 @@
 package com.payment.seffaf.operation;
 
+import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.exceptions.ValidationException;
 
 /**
@@ -9,9 +10,9 @@ public interface ISeffafOperation<T> {
 
     T init(Object... params);
 
-    void validate() throws ValidationException;
+    void validate() throws SeffafException;
 
-    T operate();
+    T operate() throws SeffafException;
 
     T handleException(Exception e);
 

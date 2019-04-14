@@ -23,7 +23,7 @@ public class Payment extends Auditable {
     @Column(name = "order_id", nullable = false)
     private UUID orderId;
 
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id")
     private UUID accountId;
 
     @Column(name = "delivered_customer_id", nullable = false)
