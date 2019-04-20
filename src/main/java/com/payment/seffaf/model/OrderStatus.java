@@ -10,8 +10,9 @@ public enum OrderStatus {
     IN_QUEUE,               // ödeme yaptı, satıcı onayı bekliyor
     IN_PREPARE,             // satıcı onayladı, hazırlanıyor
     IN_TRANSPORT,           // kargoda
+    IN_APPROVAL,            // kargoyu aldı, onayda
     DELIVERED,              // teslim edildi
     CANCELLED,              // ödeme yapıldıktan sonra iptal edildi
-    REFUSED                 // geri iade talebi
+    REFUNDED                // geri iade talebi
 
 }

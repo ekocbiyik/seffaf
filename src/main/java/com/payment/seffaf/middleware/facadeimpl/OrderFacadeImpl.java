@@ -37,6 +37,12 @@ public class OrderFacadeImpl implements IOrderFacade {
     @Autowired
     private IOrderDetailService orderDetailService;
 
+    @Autowired
+    private IPaymentDetailService paymentDetailService;
+
+    @Autowired
+    private IRefundedService refundedService;
+
     @Transactional(rollbackFor = SeffafException.class)
     @Override
     public Order createOrder(UUID customerId, UUID addressId, String description, Map<UUID, Integer> pIdList) throws SeffafException {
@@ -123,9 +129,9 @@ public class OrderFacadeImpl implements IOrderFacade {
         return order;
     }
 
-    @Transactional(rollbackFor = SeffafException.class)
     @Override
-    public Order cancelOrder(UUID orderId) throws SeffafException {
+    public Map getOrder(UUID orderId) throws SeffafException {
+        /** bu metot ordera ait tüm order detailleri döner */
 
         Order order = orderService.getOrderByOrderId(orderId);
         if (order == null) {
@@ -134,35 +140,191 @@ public class OrderFacadeImpl implements IOrderFacade {
         logger.info("order found: {}", order.getOrderId());
 
         List<OrderDetail> orderDetails = orderDetailService.getOrderDetailsByOrderId(orderId);
-        if (orderDetails.isEmpty()) {
+        if (orderDetails.size() == 0) {
             throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderId));
         }
-        logger.info("order details found {}", orderDetails.size());
+        logger.info("orderDetail size: {} ", orderDetails.size());
 
-        /** eğer status IN_PAYMENT ise, hemen iptal edilebilir
-         *  değilse ödeme iadesi olacağı için düşünülmesi gereken bir durum
-         */
-        for (OrderDetail detail : orderDetails) {
-            if (detail.getOrderStatus() != OrderStatus.IN_PAYMENT) {
-                throw new SeffafException(SeffafExceptionCode.UNIMPLEMENTED_METHOD, String.format("UNIMPLEMENTED_METHOD: cancelOrder for %s", detail.getOrderStatus()));
-            }
-            logger.info("stock count will be increase for detailId: {}", detail.getOrderDetailId());
+        Map result = new HashMap();
+        result.put("order", order);
+        result.put("orderDetails", orderDetails);
+        return result;
+    }
 
-            Product product = productService.getByProductId(detail.getProductId());
-            if (product == null) {
-                throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND : %s", detail.getProductId()));
-            }
-            logger.info("product found: {}", product.getProductId());
-
-
-            productService.increaseStockCountByProduct(product, detail.getCount());
-            logger.info("product stock increased to {}", product.getStockCount());
-
-            detail.setOrderStatus(OrderStatus.CANCELLED);
-            orderDetailService.save(detail);
-            logger.info("orderDetail: {} has been cancelled", detail.getOrderDetailId());
+    @Override
+    public OrderDetail prepareOrder(UUID orderDetailId) throws SeffafException {
+        OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
+        if (orderDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
         }
-        return order;
+
+        if (orderDetail.getOrderStatus() != OrderStatus.IN_QUEUE) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_QUEUE_STAGE, String.format("ORDER_NOT_IN_QUEUE_STAGE: %s", orderDetailId));
+        }
+
+        logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
+        orderDetail.setOrderStatus(OrderStatus.IN_PREPARE);
+        orderDetailService.save(orderDetail);
+        logger.info("orderDetail: {} status updated:", orderDetailId, orderDetail.getOrderStatus());
+        return orderDetail;
+    }
+
+    @Override
+    public OrderDetail transportOrder(UUID orderDetailId, String trackingNumber) throws SeffafException {
+
+        OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
+        if (orderDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
+        }
+
+        if (orderDetail.getOrderStatus() != OrderStatus.IN_PREPARE) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_PREPARE_STAGE, String.format("ORDER_NOT_IN_PREPARE_STAGE: %s", orderDetailId));
+        }
+
+        logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
+        orderDetail.setOrderStatus(OrderStatus.IN_TRANSPORT);
+        orderDetail.setTrackingNumber(trackingNumber);
+        orderDetailService.save(orderDetail);
+        logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
+        return orderDetail;
+    }
+
+    @Override
+    public OrderDetail approvalOrder(UUID orderDetailId, String trackingNumber) throws SeffafException {
+        OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
+        if (orderDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
+        }
+
+        if (orderDetail.getOrderStatus() != OrderStatus.IN_TRANSPORT) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_TRANSPORT_STAGE, String.format("ORDER_NOT_IN_TRANSPORT_STAGE: %s", orderDetailId));
+        }
+
+        logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
+        orderDetail.setOrderStatus(OrderStatus.IN_APPROVAL);
+        orderDetailService.save(orderDetail);
+        logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
+        return orderDetail;
+    }
+
+    @Override
+    public OrderDetail deliverOrder(UUID orderId, UUID orderDetailId) throws SeffafException {
+        // bu kısım müşteri onayı ile oluyor, satıcıya para ödenebilir.
+        Order order = orderService.getOrderByOrderId(orderId);
+        if (order == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", orderId));
+        }
+        logger.info("order found: {}", order.getOrderId());
+
+        OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
+        if (orderDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
+        }
+
+        orderDetail.setOrderStatus(OrderStatus.DELIVERED);
+        orderDetailService.save(orderDetail);
+        logger.info("ORDER: {} APPROVED BY CUSTOMER: {}", orderDetail.getOrderDetailId(), orderDetail.getDeliveredCustomerId());
+        return orderDetail;
+    }
+
+    @Transactional(rollbackFor = SeffafException.class)
+    @Override
+    public List<OrderDetail> cancelOrder(UUID orderId, Map<UUID, String> detailIds) throws SeffafException {
+
+        List<OrderDetail> resultList = new ArrayList<>();
+        Order order = orderService.getOrderByOrderId(orderId);
+        if (order == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", orderId));
+        }
+        logger.info("order found: {}", order.getOrderId());
+
+        for (Map.Entry<UUID, String> entry : detailIds.entrySet()) {
+            UUID detailId = entry.getKey();
+            String customerDescription = entry.getValue();
+
+            OrderDetail orderDetail = orderDetailService.getOrderDetailById(detailId);
+            if (orderDetail == null) {
+                throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", detailId));
+            } else {
+                logger.info("cancel operation started for orderDetailId: {}", orderDetail.getOrderDetailId());
+                cancelOrderDetail(orderDetail, customerDescription);
+                resultList.add(orderDetail);
+                logger.info("cancel operation finished for orderDetailId: {}", orderDetail.getOrderDetailId());
+            }
+        }
+        return resultList;
+    }
+
+    private void cancelOrderDetail(OrderDetail orderDetail, String customerDescription) throws SeffafException {
+
+        logger.info("orderDetail status: {}", orderDetail.getOrderStatus());
+
+        /** eğer status IN_PAYMENT ise, status iptal yap, stok sayısını arttır */
+        if (orderDetail.getOrderStatus() == OrderStatus.IN_PAYMENT) {
+            orderDetail.setOrderStatus(OrderStatus.CANCELLED_IN_PAYMENT);
+            orderDetailService.save(orderDetail);
+            logger.info("orderDetail: {} status updated as CANCELLED_IN_PAYMENT!", orderDetail.getOrderDetailId());
+
+        } else if (Arrays.asList(OrderStatus.IN_QUEUE, OrderStatus.IN_PAYMENT).contains(orderDetail.getOrderStatus())) {
+            orderDetail.setOrderStatus(OrderStatus.CANCELLED);
+            orderDetailService.save(orderDetail);
+            logger.info("orderDetail: {} status updated as CANCELLED!", orderDetail.getOrderDetailId());
+
+            PaymentDetail paymentDetail = paymentDetailService.getPaymentDetailByOrderDetailId(orderDetail.getOrderDetailId());
+            if (paymentDetail == null) {
+                throw new SeffafException(SeffafExceptionCode.PAYMENT_DETAILS_NOT_FOUND, String.format("PAYMENT_DETAILS_NOT_FOUND for orderDetailId: %s", orderDetail.getOrderDetailId()));
+            }
+            paymentDetail.setPaymentFlow(PaymentFlow.TO_CUSTOMER); // ödeme iptal edildili için para transferi satıcıdan alıcıya döner
+            paymentDetailService.save(paymentDetail);
+            logger.info("paymentDetail: {} updated as TO_SELLER -> TO_CUSTOMER", paymentDetail.getPaymentDetailId());
+        } else if (orderDetail.getOrderStatus() == OrderStatus.IN_APPROVAL) {
+
+            if (orderDetail.isRefunded()) {
+                throw new SeffafException(SeffafExceptionCode.PRODUCT_CAN_NOT_BE_REFUNDED, String.format("PRODUCT_CAN_NOT_BE_REFUNDED : %s", orderDetail.getOrderDetailId()));
+            }
+
+            // paymentflow to_seller dan to_customer’a güncellenir
+            PaymentDetail paymentDetail = paymentDetailService.getPaymentDetailByOrderDetailId(orderDetail.getOrderDetailId());
+            if (paymentDetail == null) {
+                throw new SeffafException(SeffafExceptionCode.PAYMENT_DETAILS_NOT_FOUND, String.format("PAYMENT_DETAILS_NOT_FOUND for orderDetailId: %s", orderDetail.getOrderDetailId()));
+            }
+            paymentDetail.setPaymentFlow(PaymentFlow.TO_CUSTOMER); // ödeme iptal edildili için para transferi satıcıdan alıcıya döner
+            paymentDetailService.save(paymentDetail);
+            logger.info("paymentDetail: {} updated as TO_SELLER -> TO_CUSTOMER", paymentDetail.getPaymentDetailId());
+
+            //refunded tablosuna kayıt atılır (akış artık refunded status’le devam eder)
+            RefundedDetail rDetail = new RefundedDetail();
+            rDetail.setOrderDetailId(orderDetail.getOrderDetailId());
+            rDetail.setProductId(orderDetail.getProductId());
+            rDetail.setCount(orderDetail.getCount());
+            rDetail.setProductAmount(orderDetail.getProductAmount());
+            rDetail.setCurrency(orderDetail.getCurrency());
+            rDetail.setSellerCustomerId(orderDetail.getSellerCustomerId());
+            rDetail.setSellerAddressId(orderDetail.getSellerAddressId());
+            rDetail.setDeliveredCustomerId(orderDetail.getDeliveredCustomerId());
+            rDetail.setDeliveryAddressId(orderDetail.getDeliveryAddressId());
+            rDetail.setCustomerDescription(customerDescription);
+            rDetail.setRefundedStatus(RefundedStatus.WAITING_FOR_TRANSPORT);
+            refundedService.save(rDetail);
+            logger.info("refundedDetail created: {}", rDetail.getRefundedDetailId());
+
+
+            // orderDetail’e refundedId eklenir.
+            orderDetail.setOrderStatus(OrderStatus.REFUNDED);
+            orderDetail.setRefundedDetailId(rDetail.getRefundedDetailId());
+            orderDetailService.save(orderDetail);
+            logger.info("orderDetail: {} status updated as REFUNDED!", orderDetail.getOrderDetailId());
+        } else {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_CANCEL_STAGE, String.format("ORDER_NOT_IN_CANCEL_STAGE orderDetailId: %s", orderDetail.getOrderDetailId()));
+        }
+
+        // işlemler başarılıysa stok sayısını upgrade et..
+        Product product = productService.getByProductId(orderDetail.getProductId());
+        if (product == null) {
+            throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND : %s", orderDetail.getProductId()));
+        }
+        productService.increaseStockCountByProduct(product, orderDetail.getCount());
+        logger.info("product: {} stock count increased +{}", product.getProductId(), orderDetail.getCount());
     }
 
 }

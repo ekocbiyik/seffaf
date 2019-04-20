@@ -15,6 +15,12 @@ import java.util.Currency;
  */
 public class ValidationUtils {
 
+    public static void notEmptyStringValidation(String text) throws ValidationException {
+        if (text == null || text.isEmpty()) {
+            throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", text));
+        }
+    }
+
     public static void UUIDValidation(String uuid) throws ValidationException {
         if (!uuid.matches("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")) {
             throw new ValidationException(SeffafExceptionCode.INVALID_PARAMETER, String.format("invalid parameter: %s", uuid));

@@ -66,8 +66,8 @@ public class AddOrderController extends SeffafOperationImpl {
         logger.info("AddOrderController operate executed!");
         Order order = orderFacade.createOrder(customerId, addressId, description, productList);
 
-        ObjectMapper oMapper = new ObjectMapper();
         AddOrderOutput output = new AddOrderOutput(100, order);
+        ObjectMapper oMapper = new ObjectMapper();
         Map map = oMapper.convertValue(output, Map.class);
         return map;
     }

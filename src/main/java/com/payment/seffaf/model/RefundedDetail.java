@@ -9,41 +9,31 @@ import java.util.Date;
 import java.util.UUID;
 
 /**
- * enbiya on 24.03.2019
+ * ekocbiyik on 4/20/19
  */
 @Entity
-@Table(name = "t_order_detail")
-public class OrderDetail extends Auditable {
+@Table(name = "t_refunded_detail")
+public class RefundedDetail extends Auditable {
+
+    // bu tablodaki akış orderın tam tersi, fakat fieldlar gerçek anlamlarına sahip, seller-> ürünü ilk satan kişi. ama ürün deliveredCustomerdan sellerCustomera gidiyor.
 
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @Column(name = "refunded_detail_id", nullable = false, unique = true)
+    private UUID refundedDetailId;
+
     @Column(name = "order_detail_id", nullable = false, unique = true)
     private UUID orderDetailId;
-
-    @Column(name = "order_id", nullable = false, unique = true)
-    private UUID orderId;
 
     @Column(name = "product_id", nullable = false)
     private UUID productId;
 
-    @Column(name = "is_refunded", nullable = false) // iade edilebilir mi?
-    private boolean isRefunded;
-
-    @Column(name = "refunded_detail_id")
-    private UUID refundedDetailId;
-
     @Column(name = "count", nullable = false)
     private int count;
 
-    @Column(name = "description")
-    private String description;
-
     @Column(name = "product_amount", nullable = false)
     private BigDecimal productAmount;
-
-    @Column(name = "transport_amount", nullable = false)
-    private BigDecimal transportAmount;
 
     @Column(name = "currency", nullable = false)
     private Currency currency;
@@ -63,9 +53,15 @@ public class OrderDetail extends Auditable {
     @Column(name = "delivery_address_id", nullable = false)
     private UUID deliveryAddressId;
 
+    @Column(name = "customer_description", nullable = false)
+    private String customerDescription; // satan kişi, geri gelen ürüne neden itiraz etti?
+
+    @Column(name = "seller_description", nullable = false)
+    private String sellerDescription; // alan kişi niye itiraz etti?
+
     @Enumerated(EnumType.ORDINAL)
-    @Column(name = "order_status", nullable = false)
-    private OrderStatus orderStatus;
+    @Column(name = "refunded_status", nullable = false)
+    private RefundedStatus refundedStatus;
 
     @Temporal(value = TemporalType.TIMESTAMP)
     @Column(name = "shipped_date")
@@ -75,20 +71,20 @@ public class OrderDetail extends Auditable {
     @Column(name = "received_date")
     private Date receivedDate;
 
+    public UUID getRefundedDetailId() {
+        return refundedDetailId;
+    }
+
+    public void setRefundedDetailId(UUID refundedDetailId) {
+        this.refundedDetailId = refundedDetailId;
+    }
+
     public UUID getOrderDetailId() {
         return orderDetailId;
     }
 
     public void setOrderDetailId(UUID orderDetailId) {
         this.orderDetailId = orderDetailId;
-    }
-
-    public UUID getOrderId() {
-        return orderId;
-    }
-
-    public void setOrderId(UUID orderId) {
-        this.orderId = orderId;
     }
 
     public UUID getProductId() {
@@ -99,22 +95,6 @@ public class OrderDetail extends Auditable {
         this.productId = productId;
     }
 
-    public boolean isRefunded() {
-        return isRefunded;
-    }
-
-    public void setRefunded(boolean refunded) {
-        isRefunded = refunded;
-    }
-
-    public UUID getRefundedDetailId() {
-        return refundedDetailId;
-    }
-
-    public void setRefundedDetailId(UUID refundedDetailId) {
-        this.refundedDetailId = refundedDetailId;
-    }
-
     public int getCount() {
         return count;
     }
@@ -123,28 +103,12 @@ public class OrderDetail extends Auditable {
         this.count = count;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public BigDecimal getProductAmount() {
         return productAmount;
     }
 
     public void setProductAmount(BigDecimal productAmount) {
         this.productAmount = productAmount;
-    }
-
-    public BigDecimal getTransportAmount() {
-        return transportAmount;
-    }
-
-    public void setTransportAmount(BigDecimal transportAmount) {
-        this.transportAmount = transportAmount;
     }
 
     public Currency getCurrency() {
@@ -195,12 +159,28 @@ public class OrderDetail extends Auditable {
         this.deliveryAddressId = deliveryAddressId;
     }
 
-    public OrderStatus getOrderStatus() {
-        return orderStatus;
+    public String getCustomerDescription() {
+        return customerDescription;
     }
 
-    public void setOrderStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
+    public void setCustomerDescription(String customerDescription) {
+        this.customerDescription = customerDescription;
+    }
+
+    public String getSellerDescription() {
+        return sellerDescription;
+    }
+
+    public void setSellerDescription(String sellerDescription) {
+        this.sellerDescription = sellerDescription;
+    }
+
+    public RefundedStatus getRefundedStatus() {
+        return refundedStatus;
+    }
+
+    public void setRefundedStatus(RefundedStatus refundedStatus) {
+        this.refundedStatus = refundedStatus;
     }
 
     public Date getShippedDate() {

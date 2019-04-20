@@ -14,6 +14,10 @@ import java.util.UUID;
 @Table(name = "t_payment")
 public class Payment extends Auditable {
 
+    /**
+     * bu tablo alınan ödemelerin bilgilerini tutmak için
+     */
+
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
