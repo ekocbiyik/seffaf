@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 /**
  * ekocbiyik on 4/20/19
  */
@@ -19,5 +21,11 @@ public class RefundedServiceImpl implements IRefundedService {
     @Override
     public void save(RefundedDetail refundedDetail) {
         refundedDetailDao.save(refundedDetail);
+    }
+
+    @Transactional
+    @Override
+    public RefundedDetail getRefundedById(UUID refundedDetailId) {
+        return refundedDetailDao.findByRefundedDetailId(refundedDetailId);
     }
 }

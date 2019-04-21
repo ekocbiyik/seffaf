@@ -43,7 +43,7 @@ public class CancelOrderController extends SeffafOperationImpl {
             String customerDescription = ((LinkedHashMap) oList).get("customerDescription").toString();
 
             ValidationUtils.UUIDValidation(orderDetailId);
-            ValidationUtils.notEmptyStringValidation(customerDescription);
+            ValidationUtils.notEmptyStringValidation(customerDescription); // çok önemli!
             orderDetails.put(UUID.fromString(orderDetailId), customerDescription);
         }
         if (orderDetails.isEmpty() || orderDetails.size() > 1) {

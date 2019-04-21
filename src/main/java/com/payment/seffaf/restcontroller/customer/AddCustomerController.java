@@ -47,7 +47,7 @@ public class AddCustomerController extends SeffafOperationImpl {
     @Override
     public Object operate() {
         logger.info("AddCustomerController operate executed!");
-        customerFacade.createCustomer(customer);
+        customer = customerFacade.createCustomer(customer);
 
         ObjectMapper oMapper = new ObjectMapper();
         AddCustomerOutput output = new AddCustomerOutput(100, customer);

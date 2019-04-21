@@ -1,6 +1,8 @@
 package com.payment.seffaf.model;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,6 +15,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_refunded_detail")
+@Audited
+@EntityListeners({AuditingEntityListener.class})
 public class RefundedDetail extends Auditable {
 
     // bu tablodaki akış orderın tam tersi, fakat fieldlar gerçek anlamlarına sahip, seller-> ürünü ilk satan kişi. ama ürün deliveredCustomerdan sellerCustomera gidiyor.
@@ -53,10 +57,10 @@ public class RefundedDetail extends Auditable {
     @Column(name = "delivery_address_id", nullable = false)
     private UUID deliveryAddressId;
 
-    @Column(name = "customer_description", nullable = false)
+    @Column(name = "customer_description")
     private String customerDescription; // satan kişi, geri gelen ürüne neden itiraz etti?
 
-    @Column(name = "seller_description", nullable = false)
+    @Column(name = "seller_description")
     private String sellerDescription; // alan kişi niye itiraz etti?
 
     @Enumerated(EnumType.ORDINAL)

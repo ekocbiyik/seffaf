@@ -11,4 +11,7 @@ import java.util.UUID;
  */
 @Repository
 public interface IRefundedDetailDao extends CrudRepository<RefundedDetail, UUID> {
+
+    RefundedDetail findByRefundedDetailId(UUID refundedDetailId);
+
 }

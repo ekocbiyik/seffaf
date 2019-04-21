@@ -1,6 +1,8 @@
 package com.payment.seffaf.model;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,6 +15,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_order_detail")
+@Audited
+@EntityListeners({AuditingEntityListener.class})
 public class OrderDetail extends Auditable {
 
     @Id

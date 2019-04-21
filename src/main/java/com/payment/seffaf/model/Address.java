@@ -1,6 +1,8 @@
 package com.payment.seffaf.model;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.util.UUID;
@@ -10,6 +12,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_address")
+@Audited
+@EntityListeners({AuditingEntityListener.class})
 public class Address extends Auditable {
 
     @Id

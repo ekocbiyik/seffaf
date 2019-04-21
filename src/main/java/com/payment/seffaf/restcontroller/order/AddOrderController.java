@@ -6,6 +6,7 @@ import com.payment.seffaf.exceptions.SeffafExceptionCode;
 import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.middleware.facade.IOrderFacade;
 import com.payment.seffaf.model.Order;
+import com.payment.seffaf.model.OrderDetail;
 import com.payment.seffaf.operation.SeffafOperationImpl;
 import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,7 +67,10 @@ public class AddOrderController extends SeffafOperationImpl {
         logger.info("AddOrderController operate executed!");
         Order order = orderFacade.createOrder(customerId, addressId, description, productList);
 
-        AddOrderOutput output = new AddOrderOutput(100, order);
+        Map result = orderFacade.getOrder(order.getOrderId());
+        List<OrderDetail> orderDetailList = (List<OrderDetail>) result.get("orderDetails");
+
+        GetOrderOutput output = new GetOrderOutput(100, order, orderDetailList);
         ObjectMapper oMapper = new ObjectMapper();
         Map map = oMapper.convertValue(output, Map.class);
         return map;

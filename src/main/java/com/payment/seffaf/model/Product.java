@@ -1,6 +1,8 @@
 package com.payment.seffaf.model;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -12,6 +14,8 @@ import java.util.UUID;
  */
 @Entity
 @Table(name = "t_product")
+@Audited
+@EntityListeners({AuditingEntityListener.class})
 public class Product extends Auditable {
 
     @Id
@@ -29,7 +33,7 @@ public class Product extends Auditable {
     @Column(name = "address_id", nullable = false)
     private UUID addressId;
 
-    @Column(name = "account_id", nullable = false)
+    @Column(name = "account_id")
     private UUID accountId;
 
     @Column(name = "is_refunded", nullable = false) // iade edilebilir mi?

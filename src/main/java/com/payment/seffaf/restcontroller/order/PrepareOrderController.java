@@ -20,6 +20,7 @@ public class PrepareOrderController extends SeffafOperationImpl {
 
     private Map request;
     private UUID orderDetailId;
+    private UUID sellerCustomerId;
 
     @Autowired
     private IOrderFacade orderFacade;
@@ -33,14 +34,16 @@ public class PrepareOrderController extends SeffafOperationImpl {
     @Override
     public void validate() throws SeffafException {
         ValidationUtils.UUIDValidation(request.get("orderDetailId").toString());
+        ValidationUtils.UUIDValidation(request.get("sellerCustomerId").toString());
         orderDetailId = UUID.fromString(request.get("orderDetailId").toString());
+        sellerCustomerId = UUID.fromString(request.get("sellerCustomerId").toString());
     }
 
     @Override
     public Object operate() throws SeffafException {
         logger.info("PrepareOrderController operate executed!");
 
-        OrderDetail oDetail = orderFacade.prepareOrder(orderDetailId);
+        OrderDetail oDetail = orderFacade.prepareOrder(orderDetailId, sellerCustomerId);
 
         ObjectMapper oMapper = new ObjectMapper();
         PrepareOrderDetailOutput output = new PrepareOrderDetailOutput(100, oDetail);

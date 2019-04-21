@@ -1,15 +1,21 @@
 package com.payment.seffaf.middleware.facadeimpl;
 
+import com.payment.seffaf.exceptions.SeffafException;
+import com.payment.seffaf.exceptions.SeffafExceptionCode;
 import com.payment.seffaf.middleware.facade.IBankAccountFacade;
 import com.payment.seffaf.model.BankAccount;
+import com.payment.seffaf.model.Product;
 import com.payment.seffaf.repositories.service.IBankAccountService;
+import com.payment.seffaf.repositories.service.IProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -23,8 +29,12 @@ public class BankAccountFacadeImpl implements IBankAccountFacade {
     @Autowired
     private IBankAccountService bankAccountService;
 
+    @Autowired
+    private IProductService productService;
+
+    @Transactional(rollbackFor = SeffafException.class)
     @Override
-    public BankAccount createBankAccount(BankAccount bankAccount) {
+    public BankAccount createBankAccount(BankAccount bankAccount, UUID productId) throws SeffafException {
 
         // aynı customerId ve IbanNumber'a sahip birden çok kayıt olamaz!
         List<BankAccount> customerAccountlist = bankAccountService.getAllByCustomerId(bankAccount.getCustomerId());
@@ -42,6 +52,17 @@ public class BankAccountFacadeImpl implements IBankAccountFacade {
 
         bankAccountService.save(bankAccount);
         logger.info("BankAccount created with id: {}", bankAccount.getAccountId());
+
+
+        Product product = productService.getByProductId(productId);
+        if (product == null) {
+            throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND:: %s", productId));
+        }
+
+        product.setAccountId(bankAccount.getAccountId());
+        productService.save(product);
+        logger.info("product: {} accountId: {} updated", productId, bankAccount.getAccountId());
+
         return bankAccount;
     }
 }

@@ -152,10 +152,14 @@ public class OrderFacadeImpl implements IOrderFacade {
     }
 
     @Override
-    public OrderDetail prepareOrder(UUID orderDetailId) throws SeffafException {
+    public OrderDetail prepareOrder(UUID orderDetailId, UUID sellerCustomerId) throws SeffafException {
         OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
         if (orderDetail == null) {
             throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
+        }
+
+        if (!orderDetail.getSellerCustomerId().equals(sellerCustomerId)) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND for seller: %s", sellerCustomerId));
         }
 
         if (orderDetail.getOrderStatus() != OrderStatus.IN_QUEUE) {
@@ -170,51 +174,48 @@ public class OrderFacadeImpl implements IOrderFacade {
     }
 
     @Override
-    public OrderDetail transportOrder(UUID orderDetailId, String trackingNumber) throws SeffafException {
+    public OrderDetail transportOrder(UUID orderDetailId, String trackingNumber, OrderStatus orderStatus) throws SeffafException {
 
         OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
         if (orderDetail == null) {
             throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
         }
 
-        if (orderDetail.getOrderStatus() != OrderStatus.IN_PREPARE) {
-            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_PREPARE_STAGE, String.format("ORDER_NOT_IN_PREPARE_STAGE: %s", orderDetailId));
+        // gelen durum hazırlanıyorsa ve gelen status kargo ise kargoya verildi demek.
+        if (orderStatus == OrderStatus.IN_TRANSPORT && orderDetail.getOrderStatus() == OrderStatus.IN_PREPARE) {
+            logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
+            orderDetail.setOrderStatus(OrderStatus.IN_TRANSPORT);
+            orderDetail.setTrackingNumber(trackingNumber);
+            orderDetail.setShippedDate(new Date());
+            orderDetailService.save(orderDetail);
+            logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
+        } else if (orderStatus == OrderStatus.IN_APPROVAL && orderDetail.getOrderStatus() == OrderStatus.IN_TRANSPORT) {
+            // gelen durum teslim edildi ise ve sipariş durumu kardoda ise müşteri kargoyu aldı demek
+            logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
+            orderDetail.setOrderStatus(OrderStatus.IN_APPROVAL);
+            orderDetail.setReceivedDate(new Date());
+            orderDetailService.save(orderDetail);
+            logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
+
+        } else {
+            throw new SeffafException(SeffafExceptionCode.ORDER_UNKNOWN_STAGE, String.format("ORDER_UNKNOWN_STAGE: %s", orderDetailId));
         }
 
-        logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
-        orderDetail.setOrderStatus(OrderStatus.IN_TRANSPORT);
-        orderDetail.setTrackingNumber(trackingNumber);
-        orderDetailService.save(orderDetail);
-        logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
         return orderDetail;
     }
 
     @Override
-    public OrderDetail approvalOrder(UUID orderDetailId, String trackingNumber) throws SeffafException {
-        OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
-        if (orderDetail == null) {
-            throw new SeffafException(SeffafExceptionCode.ORDER_DETAILS_NOT_FOUND, String.format("ORDER_DETAILS_NOT_FOUND: %s", orderDetailId));
-        }
-
-        if (orderDetail.getOrderStatus() != OrderStatus.IN_TRANSPORT) {
-            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_TRANSPORT_STAGE, String.format("ORDER_NOT_IN_TRANSPORT_STAGE: %s", orderDetailId));
-        }
-
-        logger.info("orderDetailStatus: {}", orderDetail.getOrderStatus());
-        orderDetail.setOrderStatus(OrderStatus.IN_APPROVAL);
-        orderDetailService.save(orderDetail);
-        logger.info("orderDetail: {} status updated: {}, trackingNumber: {}", orderDetailId, orderDetail.getOrderStatus(), trackingNumber);
-        return orderDetail;
-    }
-
-    @Override
-    public OrderDetail deliverOrder(UUID orderId, UUID orderDetailId) throws SeffafException {
+    public OrderDetail deliverOrder(UUID customerId, UUID orderId, UUID orderDetailId) throws SeffafException {
         // bu kısım müşteri onayı ile oluyor, satıcıya para ödenebilir.
         Order order = orderService.getOrderByOrderId(orderId);
         if (order == null) {
             throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", orderId));
         }
         logger.info("order found: {}", order.getOrderId());
+
+        if (!order.getDeliveredCustomerId().equals(customerId)) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_NOT_FOUND, String.format("ORDER_NOT_FOUND: %s", orderId));
+        }
 
         OrderDetail orderDetail = orderDetailService.getOrderDetailById(orderDetailId);
         if (orderDetail == null) {
@@ -258,12 +259,20 @@ public class OrderFacadeImpl implements IOrderFacade {
     private void cancelOrderDetail(OrderDetail orderDetail, String customerDescription) throws SeffafException {
 
         logger.info("orderDetail status: {}", orderDetail.getOrderStatus());
+        // işlemler başarılıysa stok sayısını upgrade et..
+        Product product = productService.getByProductId(orderDetail.getProductId());
+        if (product == null) {
+            throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND : %s", orderDetail.getProductId()));
+        }
 
         /** eğer status IN_PAYMENT ise, status iptal yap, stok sayısını arttır */
         if (orderDetail.getOrderStatus() == OrderStatus.IN_PAYMENT) {
             orderDetail.setOrderStatus(OrderStatus.CANCELLED_IN_PAYMENT);
             orderDetailService.save(orderDetail);
             logger.info("orderDetail: {} status updated as CANCELLED_IN_PAYMENT!", orderDetail.getOrderDetailId());
+
+            productService.increaseStockCountByProduct(product, orderDetail.getCount());
+            logger.info("product: {} stock count increased +{}", product.getProductId(), orderDetail.getCount());
 
         } else if (Arrays.asList(OrderStatus.IN_QUEUE, OrderStatus.IN_PAYMENT).contains(orderDetail.getOrderStatus())) {
             orderDetail.setOrderStatus(OrderStatus.CANCELLED);
@@ -277,6 +286,9 @@ public class OrderFacadeImpl implements IOrderFacade {
             paymentDetail.setPaymentFlow(PaymentFlow.TO_CUSTOMER); // ödeme iptal edildili için para transferi satıcıdan alıcıya döner
             paymentDetailService.save(paymentDetail);
             logger.info("paymentDetail: {} updated as TO_SELLER -> TO_CUSTOMER", paymentDetail.getPaymentDetailId());
+
+            productService.increaseStockCountByProduct(product, orderDetail.getCount());
+            logger.info("product: {} stock count increased +{}", product.getProductId(), orderDetail.getCount());
         } else if (orderDetail.getOrderStatus() == OrderStatus.IN_APPROVAL) {
 
             if (orderDetail.isRefunded()) {
@@ -317,14 +329,78 @@ public class OrderFacadeImpl implements IOrderFacade {
         } else {
             throw new SeffafException(SeffafExceptionCode.ORDER_NOT_IN_CANCEL_STAGE, String.format("ORDER_NOT_IN_CANCEL_STAGE orderDetailId: %s", orderDetail.getOrderDetailId()));
         }
-
-        // işlemler başarılıysa stok sayısını upgrade et..
-        Product product = productService.getByProductId(orderDetail.getProductId());
-        if (product == null) {
-            throw new SeffafException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND : %s", orderDetail.getProductId()));
-        }
-        productService.increaseStockCountByProduct(product, orderDetail.getCount());
-        logger.info("product: {} stock count increased +{}", product.getProductId(), orderDetail.getCount());
     }
 
+    @Override
+    public RefundedDetail getRefundedOrder(UUID refundedDetailId) throws SeffafException {
+        RefundedDetail rDetail = refundedService.getRefundedById(refundedDetailId);
+        if (rDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_REFUNDED_NOT_FOUND, String.format("ORDER_REFUNDED_NOT_FOUND : %s", refundedDetailId));
+        }
+        logger.info("refundedDetail found: {}", rDetail.getRefundedDetailId());
+        return rDetail;
+    }
+
+    @Override
+    public RefundedDetail transportRefunded(UUID refundedDetailId, String trackingNumber) throws SeffafException {
+
+        RefundedDetail rDetail = refundedService.getRefundedById(refundedDetailId);
+        if (rDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_REFUNDED_NOT_FOUND, String.format("ORDER_REFUNDED_NOT_FOUND : %s", refundedDetailId));
+        }
+        logger.info("refundedDetail found: {}", rDetail.getRefundedDetailId());
+
+        if (rDetail.getRefundedStatus() == RefundedStatus.WAITING_FOR_TRANSPORT) {
+            rDetail.setTrackingNumber(trackingNumber);
+            rDetail.setShippedDate(new Date());
+            rDetail.setRefundedStatus(RefundedStatus.IN_TRANSPORT);
+            refundedService.save(rDetail);
+            logger.info("refundedDetail updated: {} with trackingNumber: {}", rDetail.getRefundedDetailId(), trackingNumber);
+        } else {
+            throw new SeffafException(SeffafExceptionCode.UNIMPLEMENTED_METHOD, String.format("UNIMPLEMENTED_METHOD : %s", refundedDetailId));
+        }
+
+        return rDetail;
+    }
+
+    @Override
+    public RefundedDetail deliverRefunded(UUID sellerCustomerId, UUID refundedDetailId, RefundedStatus refundedStatus, String sellerDescription) throws SeffafException {
+        RefundedDetail rDetail = refundedService.getRefundedById(refundedDetailId);
+        if (rDetail == null) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_REFUNDED_NOT_FOUND, String.format("ORDER_REFUNDED_NOT_FOUND : %s", refundedDetailId));
+        }
+        logger.info("refundedDetail found: {}", rDetail.getRefundedDetailId());
+
+        if (!rDetail.getSellerCustomerId().equals(sellerCustomerId)) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_REFUNDED_NOT_FOUND, String.format("ORDER_REFUNDED_NOT_FOUND : %s", refundedDetailId));
+        }
+
+        // TODO: 4/21/19 bu kısım kargo entegrasyonuna göre değişecek
+        if (rDetail.getRefundedStatus() != RefundedStatus.IN_TRANSPORT) {
+            throw new SeffafException(SeffafExceptionCode.ORDER_UNKNOWN_STAGE, String.format("ORDER_UNKNOWN_STAGE: %s", refundedStatus.name()));
+        }
+
+        if (refundedStatus == RefundedStatus.DELIVERED) {
+            rDetail.setReceivedDate(new Date());
+            rDetail.setRefundedStatus(RefundedStatus.DELIVERED);
+            refundedService.save(rDetail);
+            logger.info("refunded accepted by seller customer!");
+
+            Product product = productService.getByProductId(rDetail.getProductId());
+            productService.increaseStockCountByProduct(product, rDetail.getCount());
+            logger.info("product: {} stock count increased +{}", product.getProductId(), rDetail.getCount());
+
+        } else if (refundedStatus == RefundedStatus.REFUSED) {
+            rDetail.setReceivedDate(new Date());
+            rDetail.setRefundedStatus(RefundedStatus.REFUSED);
+            rDetail.setSellerDescription(sellerDescription);
+            refundedService.save(rDetail);
+            // TODO: 4/21/19 bu kısımda mail at alarm üret vs vs...
+            logger.info("refunded REFUSED by seller customer!");
+        } else {
+            throw new SeffafException(SeffafExceptionCode.UNIMPLEMENTED_METHOD, String.format("UNIMPLEMENTED_METHOD: %s", refundedStatus.name()));
+        }
+
+        return rDetail;
+    }
 }

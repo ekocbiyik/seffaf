@@ -39,7 +39,7 @@ public class AddProductController extends SeffafOperationImpl {
 
         ValidationUtils.UUIDValidation(request.get("customerId").toString());
         ValidationUtils.UUIDValidation(request.get("addressId").toString());
-        ValidationUtils.UUIDValidation(request.get("accountId").toString());
+//        ValidationUtils.UUIDValidation(request.get("accountId").toString());
         ValidationUtils.booleanValidation(request.get("isRefunded").toString());    // iade edilebilir mi?
         ValidationUtils.amountValidation(request.get("productAmount").toString());
         ValidationUtils.numberValidation(request.get("stockCount").toString());     // -1 ise sınırsız stok
@@ -49,7 +49,7 @@ public class AddProductController extends SeffafOperationImpl {
         product = new Product();
         product.setCustomerId(UUID.fromString(request.get("customerId").toString()));
         product.setAddressId(UUID.fromString(request.get("addressId").toString()));
-        product.setAccountId(UUID.fromString(request.get("accountId").toString()));
+//        product.setAccountId(UUID.fromString(request.get("accountId").toString()));
         product.setRefunded(Boolean.valueOf(request.get("isRefunded").toString()));
         product.setImageUrl(request.get("imageUrl").toString());
         product.setProductAmount(new BigDecimal(request.get("productAmount").toString()));

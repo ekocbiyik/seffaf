@@ -25,8 +25,10 @@ public class OrderRestApi {
     static String cancelOrder = "cancelOrder";
     static String prepareOrder = "prepareOrder";
     static String transportOrder = "transportOrder";
-    static String approvalOrder = "approvalOrder";
-    static String deliverOrder = "delivertOrder";
+    static String deliverOrder = "deliverOrder";
+    static String getRefunded = "getRefunded";
+    static String transportRefunded = "transportRefunded";
+    static String deliverRefunded = "deliverRefunded";
 
     static {
         SeffafOperationRegistry.register(SERVICE, addOrder, AddOrderController.class);
@@ -34,8 +36,10 @@ public class OrderRestApi {
         SeffafOperationRegistry.register(SERVICE, cancelOrder, CancelOrderController.class);
         SeffafOperationRegistry.register(SERVICE, prepareOrder, PrepareOrderController.class);
         SeffafOperationRegistry.register(SERVICE, transportOrder, TransportOrderController.class);
-        SeffafOperationRegistry.register(SERVICE, approvalOrder, ApprovalOrderController.class);
         SeffafOperationRegistry.register(SERVICE, deliverOrder, DeliverOrderController.class);
+        SeffafOperationRegistry.register(SERVICE, getRefunded, GetRefundedController.class);
+        SeffafOperationRegistry.register(SERVICE, transportRefunded, TransportRefundedController.class);
+        SeffafOperationRegistry.register(SERVICE, deliverRefunded, DeliverRefundedController.class);
     }
 
     @Autowired
@@ -51,6 +55,7 @@ public class OrderRestApi {
         return (Map) operationExecutor.execute(SERVICE, getOrder, body);
     }
 
+    // TODO: kargo entegrasyonu için nasıl bir servise ihtiyaç var iyice düşünüp bu kısmı öyle şekillendirmek gerekiyor.
     @RequestMapping(value = "/cancelOrder", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     Map cancelOrderApi(@RequestBody Map body) {
         return (Map) operationExecutor.execute(SERVICE, cancelOrder, body);
@@ -66,15 +71,24 @@ public class OrderRestApi {
         return (Map) operationExecutor.execute(SERVICE, transportOrder, body);
     }
 
-    @RequestMapping(value = "/approvalOrder", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-    Map approvalOrderApi(@RequestBody Map body) {
-        return (Map) operationExecutor.execute(SERVICE, approvalOrder, body);
-    }
-
     @RequestMapping(value = "/deliverOrder", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     Map deliverOrderApi(@RequestBody Map body) {
         return (Map) operationExecutor.execute(SERVICE, deliverOrder, body);
     }
 
+    @RequestMapping(value = "/getRefunded", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    Map getRefundedApi(@RequestBody Map body) {
+        return (Map) operationExecutor.execute(SERVICE, getRefunded, body);
+    }
+
+    @RequestMapping(value = "/transportRefunded", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    Map transportRefundedApi(@RequestBody Map body) {
+        return (Map) operationExecutor.execute(SERVICE, transportRefunded, body);
+    }
+
+    @RequestMapping(value = "/deliverRefunded", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    Map deliverRefundedApi(@RequestBody Map body) {
+        return (Map) operationExecutor.execute(SERVICE, deliverRefunded, body);
+    }
 
 }

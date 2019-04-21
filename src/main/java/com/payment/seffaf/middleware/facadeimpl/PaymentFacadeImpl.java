@@ -71,8 +71,13 @@ public class PaymentFacadeImpl implements IPaymentFacade {
             pDetail.setPaymentFlow(PaymentFlow.TO_SELLER); // ücret ilk olarak müşteriden satıcıya
             pDetail.setPaymentStatus(PaymentStatus.WAITING); // ücret ilk olarak seffaf hesabında
 
-            paymentDetailService.save(pDetail);
-            logger.info("paymentDetail created: {} status: {}", pDetail.getPaymentDetailId(), pDetail.getPaymentStatus());
+            if (paymentDetailService.getPaymentDetailByOrderDetailId(oDetail.getOrderDetailId()) == null) {
+                paymentDetailService.save(pDetail);
+                logger.info("paymentDetail created: {} status: {}", pDetail.getPaymentDetailId(), pDetail.getPaymentStatus());
+            } else {
+                throw new SeffafException(SeffafExceptionCode.PAYMENT_ALREADY_EXIST, String.format("PAYMENT_ALREADY_EXIST: %s", oDetail.getOrderDetailId()));
+            }
+
             // TODO: 4/20/19 burada mail atılacak...
         }
         return payment;

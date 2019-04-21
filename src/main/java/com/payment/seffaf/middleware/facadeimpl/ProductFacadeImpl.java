@@ -50,10 +50,11 @@ public class ProductFacadeImpl implements IProductFacade {
             throw new AddressException(SeffafExceptionCode.ADDRESS_NOT_FOUND, product.getAddressId().toString());
         }
 
-        BankAccount bankAccountById = bankAccountService.getBankAccountById(product.getAccountId());
-        if (bankAccountById == null) {
-            throw new BankAccountException(SeffafExceptionCode.BANK_ACCOUNT_NOT_FOUND, product.getAccountId().toString());
-        }
+        // banka bilgileri sonra
+//        BankAccount bankAccountById = bankAccountService.getBankAccountById(product.getAccountId());
+//        if (bankAccountById == null) {
+//            throw new BankAccountException(SeffafExceptionCode.BANK_ACCOUNT_NOT_FOUND, product.getAccountId().toString());
+//        }
 
         productService.save(product);
         logger.info("product created! {}", product.getProductId());
@@ -67,6 +68,11 @@ public class ProductFacadeImpl implements IProductFacade {
         if (product == null) {
             throw new ProductException(SeffafExceptionCode.PRODUCT_NOT_FOUND, String.format("PRODUCT_NOT_FOUND: %s", productId.toString()));
         }
+
+        if (product.getAccountId() == null) {
+            throw new ProductException(SeffafExceptionCode.PRODUCT_NOT_ACTIVATED, String.format("PRODUCT_NOT_ACTIVATED: %s", productId.toString()));
+        }
+
         logger.info("product found! {}", product.getProductId());
         return product;
     }

@@ -1,6 +1,7 @@
 package com.payment.seffaf.restcontroller.account;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.exceptions.ValidationException;
 import com.payment.seffaf.middleware.facade.IBankAccountFacade;
@@ -24,6 +25,7 @@ public class AddBankAccountController extends SeffafOperationImpl {
 
     private Map request;
     private BankAccount bankAccount;
+    private UUID productId;
 
     @Override
     public Object init(Object... params) {
@@ -34,6 +36,7 @@ public class AddBankAccountController extends SeffafOperationImpl {
     @Override
     public void validate() throws ValidationException {
         ValidationUtils.UUIDValidation(request.get("customerId").toString());
+        ValidationUtils.UUIDValidation(request.get("productId").toString());
         ValidationUtils.textValidation(request.get("cardHolderName").toString());
         ValidationUtils.IBANValidation(request.get("ibanNumber").toString());
 
@@ -46,12 +49,14 @@ public class AddBankAccountController extends SeffafOperationImpl {
         bankAccount.setCustomerId(UUID.fromString(request.get("customerId").toString()));
         bankAccount.setCardHolderName(request.get("cardHolderName").toString());
         bankAccount.setIbanNumber(request.get("ibanNumber").toString());
+
+        productId = UUID.fromString(request.get("productId").toString());
     }
 
     @Override
-    public Object operate() {
+    public Object operate() throws SeffafException {
         logger.info("AddBankAccountController operate executed!");
-        bankAccount = bankAccountFacade.createBankAccount(bankAccount);
+        bankAccount = bankAccountFacade.createBankAccount(bankAccount, productId);
 
         ObjectMapper oMapper = new ObjectMapper();
         AddBankAccountOutput output = new AddBankAccountOutput(100, bankAccount);

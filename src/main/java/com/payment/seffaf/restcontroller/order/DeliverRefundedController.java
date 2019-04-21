@@ -5,6 +5,8 @@ import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.middleware.facade.IOrderFacade;
 import com.payment.seffaf.model.OrderDetail;
+import com.payment.seffaf.model.RefundedDetail;
+import com.payment.seffaf.model.RefundedStatus;
 import com.payment.seffaf.operation.SeffafOperationImpl;
 import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,12 +19,13 @@ import java.util.UUID;
  * ekocbiyik on 4/14/19
  */
 @Controller
-public class DeliverOrderController extends SeffafOperationImpl {
+public class DeliverRefundedController extends SeffafOperationImpl {
 
     private Map request;
-    private UUID customerId;
-    private UUID orderId;
-    private UUID orderDetailId;
+    private UUID sellerCustomerId;
+    private UUID refundedDetailId;
+    private RefundedStatus refundedStatus;
+    private String sellerDescription;
 
     @Autowired
     private IOrderFacade orderFacade;
@@ -35,29 +38,33 @@ public class DeliverOrderController extends SeffafOperationImpl {
 
     @Override
     public void validate() throws SeffafException {
-        ValidationUtils.UUIDValidation(request.get("customerId").toString());
-        ValidationUtils.UUIDValidation(request.get("orderId").toString());
-        ValidationUtils.UUIDValidation(request.get("orderDetailId").toString());
-        customerId = UUID.fromString(request.get("customerId").toString());
-        orderId = UUID.fromString(request.get("orderId").toString());
-        orderDetailId = UUID.fromString(request.get("orderDetailId").toString());
+        ValidationUtils.UUIDValidation(request.get("sellerCustomerId").toString());
+        ValidationUtils.UUIDValidation(request.get("refundedDetailId").toString());
+        sellerCustomerId = UUID.fromString(request.get("sellerCustomerId").toString());
+        refundedDetailId = UUID.fromString(request.get("refundedDetailId").toString());
+        refundedStatus = RefundedStatus.valueOf(request.get("refundedStatus").toString());
+
+        if (refundedStatus == RefundedStatus.REFUSED) {
+            ValidationUtils.notEmptyStringValidation(request.get("sellerDescription").toString());
+            sellerDescription = request.get("sellerDescription").toString();
+        }
     }
 
     @Override
     public Object operate() throws SeffafException {
-        logger.info("DeliverOrderController operate executed!");
+        logger.info("DeliverRefundedController operate executed!");
 
-        OrderDetail oDetail = orderFacade.deliverOrder(customerId, orderId, orderDetailId);
+        RefundedDetail rDetail = orderFacade.deliverRefunded(sellerCustomerId, refundedDetailId, refundedStatus, sellerDescription);
 
         ObjectMapper oMapper = new ObjectMapper();
-        PrepareOrderDetailOutput output = new PrepareOrderDetailOutput(100, oDetail);
+        RefundedDetailOutput output = new RefundedDetailOutput(100, rDetail);
         Map map = oMapper.convertValue(output, Map.class);
         return map;
     }
 
     @Override
     public Object handleException(Exception e) {
-        logger.info("DeliverOrderController handleException executed!");
+        logger.info("DeliverRefundedController handleException executed!");
         int errorCode = (e instanceof SeffafException) ? ((SeffafException) e).getCode() : 99;
         return new ObjectMapper()
                 .convertValue(

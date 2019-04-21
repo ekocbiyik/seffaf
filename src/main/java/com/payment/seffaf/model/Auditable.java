@@ -4,9 +4,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.Column;
-import javax.persistence.EntityListeners;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.util.Date;
 
 /**
@@ -16,6 +14,9 @@ import java.util.Date;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class Auditable<U> {
 
+    @Column(name = "operation")
+    private String operation;
+
     @CreationTimestamp
     @Column(name = "created_date", nullable = false)
     private Date createdDate;
@@ -23,6 +24,33 @@ public abstract class Auditable<U> {
     @UpdateTimestamp
     @Column(name = "updated_date", nullable = false)
     private Date updatedDate;
+
+    @PrePersist
+    public void onPrePersist() {
+        audit("INSERT");
+    }
+
+    @PreUpdate
+    public void onPreUpdate() {
+        audit("UPDATE");
+    }
+
+    @PreRemove
+    public void onPreRemove() {
+        audit("DELETE");
+    }
+
+    private void audit(String operation) {
+        setOperation(operation);
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
+    }
 
     public Date getCreatedDate() {
         return createdDate;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.payment.seffaf.exceptions.SeffafException;
 import com.payment.seffaf.exceptions.SeffafExceptionOutput;
 import com.payment.seffaf.middleware.facade.IOrderFacade;
-import com.payment.seffaf.model.OrderDetail;
+import com.payment.seffaf.model.RefundedDetail;
 import com.payment.seffaf.operation.SeffafOperationImpl;
 import com.payment.seffaf.utils.ValidationUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +17,10 @@ import java.util.UUID;
  * ekocbiyik on 4/14/19
  */
 @Controller
-public class ApprovalOrderController extends SeffafOperationImpl {
+public class TransportRefundedController extends SeffafOperationImpl {
 
     private Map request;
-    private UUID orderDetailId;
+    private UUID refundedDetailId;
     private String trackingNumber;
 
     @Autowired
@@ -34,27 +34,27 @@ public class ApprovalOrderController extends SeffafOperationImpl {
 
     @Override
     public void validate() throws SeffafException {
-        ValidationUtils.UUIDValidation(request.get("orderDetailId").toString());
+        ValidationUtils.UUIDValidation(request.get("refundedDetailId").toString());
         ValidationUtils.notEmptyStringValidation(request.get("trackingNumber").toString());
-        orderDetailId = UUID.fromString(request.get("orderDetailId").toString());
+        refundedDetailId = UUID.fromString(request.get("refundedDetailId").toString());
         trackingNumber = request.get("trackingNumber").toString();
     }
 
     @Override
     public Object operate() throws SeffafException {
-        logger.info("ApprovalOrderController operate executed!");
+        logger.info("RefundedOrderController operate executed!");
 
-        OrderDetail oDetail = orderFacade.approvalOrder(orderDetailId, trackingNumber);
+        RefundedDetail refundedDetail = orderFacade.transportRefunded(refundedDetailId, trackingNumber);
 
         ObjectMapper oMapper = new ObjectMapper();
-        PrepareOrderDetailOutput output = new PrepareOrderDetailOutput(100, oDetail);
+        RefundedDetailOutput output = new RefundedDetailOutput(100, refundedDetail);
         Map map = oMapper.convertValue(output, Map.class);
         return map;
     }
 
     @Override
     public Object handleException(Exception e) {
-        logger.info("ApprovalOrderController handleException executed!");
+        logger.info("RefundedOrderController handleException executed!");
         int errorCode = (e instanceof SeffafException) ? ((SeffafException) e).getCode() : 99;
         return new ObjectMapper()
                 .convertValue(
